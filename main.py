@@ -1,83 +1,61 @@
-from fastapi import FastAPI, HTTPException
-from typing import List, Optional
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, Depends, status
+from sqlalchemy.orm import Session
+from typing import List
+from database import SessionLocal, engine
+import models
+import schemas
+from datetime import datetime
 
 app = FastAPI()
 
-# Modelo do livro com validação
-class Livro(BaseModel):
-    id: int
-    título: str
-    autor: str
+# Criar tabelas no banco
+models.Base.metadata.create_all(bind=engine)
 
-# Lista de livros (simula um "banco de dados" em memória)
-livros: List[Livro] = [
-    Livro(id=1, título='O Senhor dos Anéis - A Sociedade do Anel', autor='J.R.R Tolkien'),
-    Livro(id=2, título='Harry Potter e a Pedra Filosofal', autor='J.K Howling'),
-    Livro(id=3, título='Hábitos Atômicos', autor='James Clear'),
-    Livro(id=4, título='1984', autor='George Orwell'),
-    Livro(id=5, título='Dom Quixote', autor='Miguel de Cervantes'),
-    Livro(id=6, título='O Pequeno Príncipe', autor='Antoine de Saint-Exupéry'),
-    Livro(id=7, título='A Revolução dos Bichos', autor='George Orwell'),
-    Livro(id=8, título='O Código Da Vinci', autor='Dan Brown'),
-    Livro(id=9, título='Moby Dick', autor='Herman Melville'),
-    Livro(id=10, título='Crime e Castigo', autor='Fiódor Dostoiévski'),
-    Livro(id=11, título='O Alquimista', autor='Paulo Coelho'),
-    Livro(id=12, título='A Guerra dos Tronos', autor='George R.R. Martin'),
-    Livro(id=13, título='O Morro dos Ventos Uivantes', autor='Emily Brontë'),
-    Livro(id=14, título='Cem Anos de Solidão', autor='Gabriel García Márquez'),
-    Livro(id=15, título='A Lâmina da Assassina', autor='Sarah J. Maas'),
-    Livro(id=16, título='Trono de Vidro', autor='Sarah J. Maas'),
-    Livro(id=17, título='Coroa da Meia-Noite', autor='Sarah J. Maas'),
-    Livro(id=18, título='Herdeira do Fogo', autor='Sarah J. Maas'),
-    Livro(id=19, título='Rainha das Sombras', autor='Sarah J. Maas'),
-    Livro(id=20, título='Império de Tempestades', autor='Sarah J. Maas'),
-    Livro(id=21, título='Torre do Alvorecer', autor='Sarah J. Maas'),
-    Livro(id=22, título='Reino das Cinzas', autor='Sarah J. Maas'),
-    Livro(id=23, título='Corte de Espinhos e Rosas', autor='Sarah J. Maas'),
-    Livro(id=24, título='Corte de Névoa e Fúria', autor='Sarah J. Maas'),
-    Livro(id=25, título='Corte de Asas e Ruína', autor='Sarah J. Maas'),
-    Livro(id=26, título='Corte de Gelo e Estrelas', autor='Sarah J. Maas'),
-    Livro(id=27, título='Corte de Chamas Prateadas', autor='Sarah J. Maas'),
-    Livro(id=28, título='Casa de Terra e Sangue', autor='Sarah J. Maas'),
-    Livro(id=29, título='Casa de Céu e Sopro', autor='Sarah J. Maas'),
-    Livro(id=30, título='Casa de Chama e Sombra', autor='Sarah J. Maas'),
-]
+# Dependência para obter sessão do banco
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
+@app.get("/livros", response_model=List[schemas.LivroResponse])
+def listar_livros(db: Session = Depends(get_db)):
+    return db.query(models.Livro).filter(models.Livro.data_exclusao == None).all()
 
-# Consultar todos os livros
-@app.get("/livros", response_model=List[Livro])
-def obter_livros():
-    return livros
+@app.get("/livros/{id}", response_model=schemas.LivroResponse)
+def obter_livro(id: int, db: Session = Depends(get_db)):
+    livro = db.query(models.Livro).filter(models.Livro.id == id, models.Livro.data_exclusao == None).first()
+    if not livro:
+        raise HTTPException(status_code=400, detail="Livro não encontrado")
+    return livro
 
-# Consultar livro por ID
-@app.get("/livros/{id}", response_model=Livro)
-def obter_livro_por_id(id: int):
-    for livro in livros:
-        if livro.id == id:
-            return livro
-    raise HTTPException(status_code=404, detail="Livro não encontrado")
+@app.post("/livros", response_model=schemas.LivroResponse)
+def criar_livro(livro: schemas.LivroCreate, db: Session = Depends(get_db)):
+    novo_livro = models.Livro(**livro.dict())
+    db.add(novo_livro)
+    db.commit()
+    db.refresh(novo_livro)
+    return novo_livro
 
-# Criar novo livro
-@app.post("/livros", response_model=List[Livro])
-def incluir_novo_livro(novo_livro: Livro):
-    livros.append(novo_livro)
-    return livros
+@app.put("/livros/{id}", response_model=schemas.LivroResponse)
+def atualizar_livro(id: int, livro: schemas.LivroUpdate, db: Session = Depends(get_db)):
+    livro_db = db.query(models.Livro).filter(models.Livro.id == id, models.Livro.data_exclusao == None).first()
+    if not livro_db:
+        raise HTTPException(status_code=400, detail="Livro não encontrado")
+    
+    for campo, valor in livro.dict().items():
+        setattr(livro_db, campo, valor)
+    livro_db.data_edicao = datetime.utcnow()
+    db.commit()
+    db.refresh(livro_db)
+    return livro_db
 
-# Editar livro por ID
-@app.put("/livros/{id}", response_model=Livro)
-def editar_livro_por_id(id: int, livro_alterado: Livro):
-    for indice, livro in enumerate(livros):
-        if livro.id == id:
-            livros[indice] = livro_alterado
-            return livros[indice]
-    raise HTTPException(status_code=404, detail="Livro não encontrado")
-
-# Excluir livro por ID
-@app.delete("/livros/{id}", response_model=List[Livro])
-def excluir_livro(id: int):
-    for indice, livro in enumerate(livros):
-        if livro.id == id:
-            del livros[indice]
-            return livros
-    raise HTTPException(status_code=404, detail="Livro não encontrado")
+@app.delete("/livros/{id}", response_model=schemas.LivroResponse)
+def deletar_livro(id: int, db: Session = Depends(get_db)):
+    livro = db.query(models.Livro).filter(models.Livro.id == id, models.Livro.data_exclusao == None).first()
+    if not livro:
+        raise HTTPException(status_code=400, detail="Livro não encontrado")
+    livro.data_exclusao = datetime.utcnow()
+    db.commit()
+    return livro
