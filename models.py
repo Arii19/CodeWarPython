@@ -7,6 +7,7 @@ class Livro(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String, nullable=False)
+    autor = Column(String, nullable=False)
     descricao = Column(String, nullable=False)
     genero = Column(String, nullable=False)
     data_inclusao = Column(DateTime, default=datetime.utcnow)
