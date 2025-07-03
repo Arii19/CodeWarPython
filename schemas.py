@@ -4,7 +4,8 @@ from datetime import datetime
 
 class LivroBase(BaseModel):
     nome: str
-    descricao: str
+    autor: str
+    descricao: str 
     genero: str
 
 class LivroCreate(LivroBase):
