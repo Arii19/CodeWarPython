@@ -8,6 +8,12 @@ from datetime import datetime
 
 app = FastAPI()
 
+@app.get("/")
+def raiz():
+    return {"mensagem": "🚀 API da Biblioteca está no ar! Seja bem-vindo(a)!, "
+    "Você pode acessar os endpoints para gerenciar livros."
+    "\n Basta colocar a plavra livros no final da URL, por exemplo: /livros"
+    "\nMas se você quiser pesquisar por id, basta colocar o id do livro no final da URL, por exemplo: /livros/1"}
 # Criar tabelas no banco
 models.Base.metadata.create_all(bind=engine)
 
