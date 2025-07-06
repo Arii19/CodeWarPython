@@ -42,7 +42,10 @@ def obter_livro(id: int, db: Session = Depends(get_db)):
 
 @app.get("/livros/autor/{autor}", response_model=List[schemas.LivroResponse])
 def obter_livros_por_autor(autor: str, db: Session = Depends(get_db)):
-    livros = db.query(models.Livro).filter(models.Livro.autor == autor, models.Livro.data_exclusao == None).all()
+    livros = db.query(models.Livro).filter(
+        models.Livro.autor.ilike(f"%{autor}%"),
+        models.Livro.data_exclusao == None
+    ).all()
     if not livros:
         raise HTTPException(status_code=404, detail="Nenhum livro encontrado para esse autor")
     return livros
