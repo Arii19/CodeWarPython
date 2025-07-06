@@ -40,6 +40,13 @@ def obter_livro(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Livro não encontrado")
     return livro
 
+@app.get("/livros/autor/{autor}", response_model=List[schemas.LivroResponse])
+def obter_livros_por_autor(autor: str, db: Session = Depends(get_db)):
+    livros = db.query(models.Livro).filter(models.Livro.autor == autor, models.Livro.data_exclusao == None).all()
+    if not livros:
+        raise HTTPException(status_code=404, detail="Nenhum livro encontrado para esse autor")
+    return livros
+
 @app.post("/livros", response_model=schemas.LivroResponse)
 def criar_livro(livro: schemas.LivroCreate, db: Session = Depends(get_db)):
     novo_livro = models.Livro(**livro.dict())
