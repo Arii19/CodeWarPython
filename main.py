@@ -5,8 +5,13 @@ from database import SessionLocal, engine
 import models
 import schemas
 from datetime import datetime
+from database import engine
+from models import Base
 
 app = FastAPI()
+
+# Criar tabelas no banco
+models.Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def raiz():
@@ -14,8 +19,7 @@ def raiz():
     "Você pode acessar os endpoints para gerenciar livros."
     "\n Basta colocar a plavra livros no final da URL, por exemplo: /livros"
     "\nMas se você quiser pesquisar por id, basta colocar o id do livro no final da URL, por exemplo: /livros/1"}
-# Criar tabelas no banco
-models.Base.metadata.create_all(bind=engine)
+
 
 # Dependência para obter sessão do banco
 def get_db():

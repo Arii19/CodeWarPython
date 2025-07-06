@@ -2,9 +2,13 @@
 
 from sqlalchemy.orm import Session
 from database import SessionLocal
-from models import Livro
-from datetime import datetime
+from models import Livro, Base
+from database import engine
+from datetime import datetime, UTC
 
+
+# Cria as tabelas se não existirem
+Base.metadata.create_all(bind=engine)
 
 
 def inserir_livros_iniciais():
@@ -218,7 +222,7 @@ def inserir_livros_iniciais():
     ]
 
     for livro in livros:
-        livro.data_inclusao = datetime.utcnow()
+        livro.data_inclusao = datetime.now(UTC)
         db.merge(livro)  # merge evita duplicação se ID já existir
 
     db.commit()
