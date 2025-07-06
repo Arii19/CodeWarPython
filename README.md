@@ -2,6 +2,8 @@
 
 Essa é uma API simples para gerenciar uma coleção de livros, criada com FastAPI. Ela permite consultar, criar, editar e excluir livros armazenados em uma lista em memória.
 
+Para acessar é só clicar no url: https://api-biblioteck.onrender.com
+
 ---
 
 ## Endpoints
