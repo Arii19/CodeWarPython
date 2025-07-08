@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, DateTime, Integer, String(255), DateTime
 from datetime import datetime
 from database import Base
 
@@ -11,10 +11,10 @@ class Livro(Base):
 
 # Colunas da tabela
     id = Column(Integer, primary_key=True, index=True)
-    nome = Column(String, nullable=False)
-    autor = Column(String, nullable=False)
-    descricao = Column(String, nullable=False)
-    genero = Column(String, nullable=False)
+    nome = Column(String(255), nullable=False)
+    autor = Column(String(255), nullable=False)
+    descricao = Column(String(255), nullable=False)
+    genero = Column(String(255), nullable=False)
     data_inclusao = Column(DateTime, default=datetime.utcnow)
     data_edicao = Column(DateTime, nullable=True)
     data_exclusao = Column(DateTime, nullable=True)
