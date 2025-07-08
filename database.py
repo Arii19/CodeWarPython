@@ -1,16 +1,20 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from dotenv import load_dotenv
 
-user = os.getenv("POSTGRES_USER")
-password = os.getenv("PASSWORD")
-host = os.getenv("Hostname")
-port = os.getenv("PORT", "5432")
-db = os.getenv("Database")
+# Carrega o conteúdo do arquivo .env
+load_dotenv()
 
-SQLALCHEMY_DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{db}"
+# Pegue a URL corretamente
+SQLALCHEMY_DATABASE_URL = os.getenv("SQLALCHEMY_DATABASE_URL")
+
+if not SQLALCHEMY_DATABASE_URL:
+    raise ValueError("❌ Variável EXTERNAL_DATABASE_URL não encontrada no .env!")
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
-
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()t 
