@@ -1,70 +1,42 @@
 # API de Livros com FastAPI
 
-Essa é uma API simples para gerenciar uma coleção de livros, criada com FastAPI. Ela permite consultar, criar, editar e excluir livros armazenados em uma lista em memória.
+# 📚 API de Biblioteca - FastAPI
+
+Uma API RESTful simples para gerenciamento de livros, desenvolvida com [FastAPI](https://fastapi.tiangolo.com/), com suporte a criação, leitura, atualização, exclusão lógica e buscas por nome ou autor.
 
 Para acessar é só clicar no url: https://api-biblioteca-online.onrender.com
 
 ---
 
-## Endpoints
+## 🚀 Funcionalidades
 
-    - localhost/livros (GET)
-    - localhost/livros (POST)
-    - localhost/livros/id (GET)
-    - localhost/livros/id (PUT)
-    - localhost/livros (DELETE)
-
-
-### Consultar todos os livros
-
-- **URL:** `/livros`
-- **Método:** GET
-- **Descrição:** Retorna a lista completa de livros.
-- **Resposta:** Lista de objetos `Livro`.
-
-### Consultar livro por ID
-
-- **URL:** `/livros/{id}`
-- **Método:** GET
-- **Descrição:** Retorna o livro que corresponde ao ID informado.
-- **Resposta:** Objeto `Livro`.
-- **Erro:** Retorna 404 se o livro não for encontrado.
-
-### Criar novo livro
-
-- **URL:** `/livros`
-- **Método:** POST
-- **Descrição:** Adiciona um novo livro à lista.
-- **Corpo da Requisição:** Objeto JSON representando um livro com os campos:
-  - `id` (int)
-  - `título` (string)
-  - `autor` (string)
-- **Resposta:** Lista atualizada de livros.
-
-### Editar livro por ID
-
-- **URL:** `/livros/{id}`
-- **Método:** PUT
-- **Descrição:** Atualiza os dados do livro com o ID especificado.
-- **Corpo da Requisição:** Objeto JSON com os dados atualizados do livro.
-- **Resposta:** Objeto `Livro` atualizado.
-- **Erro:** Retorna 404 se o livro não for encontrado.
-
-### Excluir livro por ID
-
-- **URL:** `/livros/{id}`
-- **Método:** DELETE
-- **Descrição:** Remove o livro com o ID especificado da lista.
-- **Resposta:** Lista atualizada de livros.
-- **Erro:** Retorna 404 se o livro não for encontrado.
+- ✅ Criar livro (`POST /livros`)
+- 📖 Listar livros (`GET /livros`)
+- 🔍 Buscar livro por ID (`GET /livros/{id}`)
+- 🔎 Buscar livros por nome (`GET /livros/nome/{nome}`)
+- 🔎 Buscar livros por autor (`GET /livros/autor/{autor}`)
+- 📝 Atualizar livro (`PUT /livros/{id}`)
+- ❌ Excluir logicamente (`DELETE /livros/{id}`)
 
 ---
 
-## Modelo do Livro
+## 🛠️ Tecnologias Utilizadas
 
-```json
-{
-  "id": 1,
-  "título": "O Senhor dos Anéis - A Sociedade do Anel",
-  "autor": "J.R.R Tolkien"
-}
+- Python 3.12+
+- FastAPI
+- SQLAlchemy
+- SQLite (ou PostgreSQL, para produção)
+- Pydantic
+- Uvicorn
+- Pytest
+- TestClient
+
+---
+
+## 📦 Instalação e Execução Local
+
+### 1. Clone o repositório
+
+```bash
+git clone https://github.com/seu-usuario/nome-do-repositorio.git
+
