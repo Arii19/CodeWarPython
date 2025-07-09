@@ -27,5 +27,7 @@ class LivroResponse(LivroBase):
     data_edicao: Optional[datetime]
     data_exclusao: Optional[datetime]
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }
+

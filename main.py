@@ -4,9 +4,10 @@ from typing import List
 from database import SessionLocal, engine
 import models
 import schemas
-from datetime import datetime
+from datetime import datetime, timezone
 from database import engine
 from models import Base
+import logging
 
 app = FastAPI()
 
@@ -70,7 +71,7 @@ def obter_livros_por_autor(autor: str, db: Session = Depends(get_db)):
 # Endpoint POST para criar um novo livro
 @app.post("/livros", response_model=schemas.LivroResponse)
 def criar_livro(livro: schemas.LivroCreate, db: Session = Depends(get_db)):
-    novo_livro = models.Livro(**livro.dict())
+    novo_livro = models.Livro(**livro.model_dump())
     db.add(novo_livro)
     db.commit()
     db.refresh(novo_livro)
@@ -82,10 +83,10 @@ def atualizar_livro(id: int, livro: schemas.LivroUpdate, db: Session = Depends(g
     livro_db = db.query(models.Livro).filter(models.Livro.id == id, models.Livro.data_exclusao == None).first()
     if not livro_db:
         raise HTTPException(status_code=400, detail="Livro não encontrado")
-    
-    for campo, valor in livro.dict().items():
+
+    for campo, valor in livro.model_dump().items():
         setattr(livro_db, campo, valor)
-    livro_db.data_edicao = datetime.utcnow()
+    livro_db.data_edicao = datetime.now(timezone.utc)
     db.commit()
     db.refresh(livro_db)
     return livro_db
@@ -96,6 +97,6 @@ def deletar_livro(id: int, db: Session = Depends(get_db)):
     livro = db.query(models.Livro).filter(models.Livro.id == id, models.Livro.data_exclusao == None).first()
     if not livro:
         raise HTTPException(status_code=400, detail="Livro não encontrado")
-    livro.data_exclusao = datetime.utcnow()
+    livro.data_exclusao = datetime.now(timezone.utc)
     db.commit()
     return livro
