@@ -2,7 +2,7 @@
 venv/
 .env
 
-# Arquivo de banco local SQLite
+# Banco de dados SQLite
 *.sqlite3
 *.db
 
@@ -15,14 +15,9 @@ __pycache__/
 # Pastas do VSCode
 .vscode/
 
-# Arquivos de log
+# Logs e temporários
 *.log
-
-# Arquivos de configuração do sistema operacional
+*.tmp
+*.swp
 .DS_Store
 Thumbs.db
-
-# Arquivos temporários do editor
-*.swp
-*.bak
-*.tmp
