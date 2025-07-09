@@ -1,0 +1,28 @@
+# Ambiente virtual
+venv/
+.env
+
+# Arquivo de banco local SQLite
+*.sqlite3
+*.db
+
+# Cache do Pytest
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Pastas do VSCode
+.vscode/
+
+# Arquivos de log
+*.log
+
+# Arquivos de configuração do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos temporários do editor
+*.swp
+*.bak
+*.tmp
