@@ -11,14 +11,14 @@ def test_raiz():
 
 def test_criar_livro():
     response = client.post("/livros", json={
-        "nome": "Livro Teste",
-        "autor": "Autor Teste",
-        "descricao": "Descrição do livro teste",
-        "genero": "Ficção"
+        "nome": "Um reino de carne e fogo",
+        "autor": "Jennifer L. Armentrout",
+        "descricao": "Sangue e Cinzas é um romance arrebatador e impossível de parar de ler.",
+        "genero": "Fantasia contemporânea"
     })
     assert response.status_code == 200
     print(response.status_code, response.json())
-    assert response.json()["nome"] == "Livro Teste"
+    assert response.json()["nome"] == "Um reino de carne e fogo"
     
 def test_listar_livros():
     response = client.get("/livros")
@@ -26,43 +26,32 @@ def test_listar_livros():
     assert isinstance(response.json(), list)
 
 def test_obter_livro_por_id():
-    # cria um novo livro primeiro
-    post = client.post("/livros", json={
-        "nome": "Livro ID",
-        "autor": "Autor ID",
-        "descricao": "Descrição do livro teste",
-        "genero": "Ficção"
-    })
-    id_livro = post.json()["id"]
+    id_livro = 17
+
     response = client.get(f"/livros/{id_livro}")
+    
     assert response.status_code == 200
     assert response.json()["id"] == id_livro
 
 def test_atualizar_livro():
-    post = client.post("/livros", json={
-        "nome": "Livro Antigo",
-        "autor": "Autor Antigo",
-        "descricao": "Descrição do livro teste",
-        "genero": "ficção"
-    })
-    id_livro = post.json()["id"]
+    id_livro = 65
+    
     response = client.put(f"/livros/{id_livro}", json={
-        "nome": "Livro Atualizado",
-        "autor": "Autor Atualizado",
-        "descricao": "Descrição do livro teste, atualizado",
-        "genero": "aventura"
+        "nome": "A Garota no Trem",
+        "autor": "Hawkins Paula ",
+        "descricao": "Um thriller psicológico cheio de reviravoltas",
+        "genero": "Mistério"
     })
+    
     assert response.status_code == 200
-    assert response.json()["nome"] == "Livro Atualizado"
+    assert response.json()["nome"] == "A Garota no Trem"
 
 def test_deletar_livro():
-    post = client.post("/livros", json={
-        "nome": "Livro para Deletar",
-        "autor": "Autor Del",
-        "descricao": "Descrição do livro teste, deletado",
-        "genero": "aventura"
-    })
-    id_livro = post.json()["id"]
-    response = client.delete(f"/livros/{id_livro}")
+    id_livro_existente = 221
+    
+    response = client.delete(f"/livros/{id_livro_existente}")
     assert response.status_code == 200
-    assert response.json()["data_exclusao"] is not None
+    
+    data_exclusao = response.json().get("data_exclusao")
+    assert data_exclusao is not None
+    assert data_exclusao != ""
