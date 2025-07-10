@@ -4,6 +4,7 @@
 
 Uma API RESTful simples para gerenciamento de livros, desenvolvida com [FastAPI](https://fastapi.tiangolo.com/), com suporte a criação, leitura, atualização, exclusão lógica e buscas por nome ou autor.
 
+Para acessar: https://api-biblioteca-online.onrender.com
 ---
 
 ## 🚀 Funcionalidades
