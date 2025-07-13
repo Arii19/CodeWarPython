@@ -35,9 +35,8 @@ def extract():
 
     
 def transform(df):
-    # Transforma o DataFrame renomeando colunas e tratando valores nulos
+    # Transforma o DataFrame renomeando colunas, tratando nulos e agrupando gêneros
     try:
-
         df = df.rename(columns={
             "title": "nome",
             "author": "autor",
@@ -46,6 +45,46 @@ def transform(df):
         })
 
         df = df.where(pd.notnull(df), None)
+
+        # Normalização e agrupamento de gêneros
+        def classificar_genero(genero):
+            if not genero:
+                return "Outros"
+            genero = str(genero).lower()
+
+            if any(p in genero for p in ["fantasia", "mitologia", "mágico", "magico"]):
+                return "Fantasia"
+            elif "ficção científica" in genero or "espaço" in genero or "futurista" in genero:
+                return "Ficção Científica"
+            elif "ficção" in genero or "fantástico" in genero or "distopia" in genero:
+                return "Ficção Geral"
+            elif "romance" in genero or "amor" in genero or "gótico" in genero or "clássico" in genero or "drama" in genero:
+                return "Romance"
+            elif "aventura" in genero:
+                return "Aventura"
+            elif "suspense" in genero or "mistério" in genero or "thriller" in genero or "policial" in genero:
+                return "Suspense / Mistério"
+            elif "terror" in genero or "horror" in genero:
+                return "Terror / Horror"
+            elif "histórico" in genero or "história" in genero or "guerra" in genero:
+                return "Histórico"
+            elif "infantil" in genero or "jovem adulto" in genero or "juvenil" in genero:
+                return "Infantil / Juvenil"
+            elif "filosófico" in genero or "psicológico" in genero or "reflexão" in genero:
+                return "Filosófico / Psicológico"
+            elif "religião" in genero or "espiritual" in genero or "fé" in genero:
+                return "Religião / Espiritual"
+            elif "autoajuda" in genero or "desenvolvimento pessoal" in genero:
+                return "Autoajuda / Desenvolvimento Pessoal"
+            elif any(p in genero for p in ["educação", "ciência", "tecnologia", "engenharia"]):
+                return "Educação / Acadêmico"
+            elif "biografia" in genero or "não ficção" in genero or "ensaio" in genero:
+                return "Biografia / Não ficção"
+            else:
+                return "Outros"
+
+        # Criação da nova coluna com o gênero principal
+        df["genero_principal"] = df["genero"].apply(classificar_genero)
 
         print("DataFrame transformado:")
         print(df.head())

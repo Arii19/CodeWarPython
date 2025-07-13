@@ -11,8 +11,4 @@ logging.basicConfig(
 )
 
 # Instância reutilizável
-<<<<<<< HEAD
 logger = logging.getLogger(__name__)
-=======
-logger = logging.getLogger(__name__)
->>>>>>> 8ae12fd747836ae3404bea8c71fd6926ae48fbec
