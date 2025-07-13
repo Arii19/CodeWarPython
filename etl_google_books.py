@@ -7,6 +7,7 @@ from database import SessionLocal
 from models import Livro
 
 def extract():
+    # Extrai dados da API do Google Books para livros de um autor específico
     try:
         url = ("https://www.googleapis.com/books/v1/volumes?q=inauthor:{autor}&maxResults=40")
         response = requests.get(url)
@@ -31,8 +32,10 @@ def extract():
 
     except Exception as e:
         print(f"Erro na extração: {e}")
+
     
 def transform(df):
+    # Transforma o DataFrame renomeando colunas e tratando valores nulos
     try:
 
         df = df.rename(columns={
@@ -53,7 +56,9 @@ def transform(df):
         print(f"Erro na transformação: {e}")
         raise
 
+
 def load(df):
+    # Carrega os dados no banco de dados SQLite
     try:
         session = SessionLocal()
         count_novos = 0
@@ -83,5 +88,3 @@ def load(df):
 dados = extract()
 dados_tratados = transform(dados)
 load(dados_tratados)
-
-
