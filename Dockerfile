@@ -4,18 +4,25 @@ FROM python:3.11
 # Define diretório de trabalho
 WORKDIR /app
 
-# Copia todos os arquivos de onde está a api para dentro do container
+# Copia todos os arquivos da API para dentro do container
 COPY . .
 
-# Instala as dependências listadas no requirements.txt
+# Instala dependências do sistema necessárias para compilação de pacotes Python
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    libpq-dev \
+    python3-dev \
+    && apt-get clean
+
+# Atualiza pip e ferramentas de build
+RUN pip install --upgrade pip setuptools wheel
+
+# Instala as dependências do projeto
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Informa ao Docker que a aplicação usará a porta 8000 (usada por padrão pelo FastAPI)
+# Informa ao Docker que a aplicação usará a porta 8000
 EXPOSE 8000
 
 # Comando que inicia a aplicação FastAPI com Uvicorn
-# --host 0.0.0.0: permite acesso externo ao container
-# --port 10000: define a porta onde a app será exposta
-# --reload: reinicia automaticamente quando houver alterações no código
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "10000", "--reload"]
-
