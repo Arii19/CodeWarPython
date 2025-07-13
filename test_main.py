@@ -11,10 +11,10 @@ def test_raiz():
 
 def test_criar_livro():
     response = client.post("/livros", json={
-        "nome": "Um reino de carne e fogo",
-        "autor": "Jennifer L. Armentrout",
-        "descricao": "Sangue e Cinzas é um romance arrebatador e impossível de parar de ler.",
-        "genero": "Fantasia contemporânea"
+        "nome": "Quando as coisas não saem como você espera: Como encontrar esperança em tempos difíceis",
+        "autor": "Haemin Sunim",
+        "descricao": "Uma jornada de delicada sabedoria para superarmos os obstáculos.",
+        "genero": "Reflexão"
     })
     assert response.status_code == 200
     print(response.status_code, response.json())
@@ -47,7 +47,7 @@ def test_atualizar_livro():
     assert response.json()["nome"] == "A Garota no Trem"
 
 def test_deletar_livro():
-    id_livro = 195
+    id_livro = 194
     
     response = client.delete(f"/livros/{id_livro}")
     assert response.status_code == 200

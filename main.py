@@ -76,15 +76,27 @@ def obter_livros_por_autor(autor: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Nenhum livro encontrado para esse autor")
     return livros
 
-# Endpoint POST para criar um novo livro
+
 @app.post("/livros", response_model=schemas.LivroResponse)
 def criar_livro(livro: schemas.LivroCreate, db: Session = Depends(get_db)):
+    livro_existente = db.query(models.Livro).filter(
+        models.Livro.nome == livro.nome,
+        models.Livro.data_exclusao == None  # se usa exclusão lógica
+    ).first()
+
+    if livro_existente:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Livro com nome '{livro.nome}' já existe."
+        )
+
     novo_livro = models.Livro(**livro.model_dump())
     db.add(novo_livro)
     db.commit()
     db.refresh(novo_livro)
     logger.info(f"📘 Livro criado: {novo_livro.nome} (ID: {novo_livro.id}) por {novo_livro.autor}")
     return novo_livro
+
 
 # Endpoint PUT para atualizar um livro existente 
 @app.put("/livros/{id}", response_model=schemas.LivroResponse)
