@@ -11,10 +11,17 @@ def test_raiz():
 
 def test_criar_livro():
     response = client.post("/livros", json={
+<<<<<<< HEAD
         "nome": "Quando as coisas não saem como você espera: Como encontrar esperança em tempos difíceis",
         "autor": "Haemin Sunim",
         "descricao": "Uma jornada de delicada sabedoria para superarmos os obstáculos.",
         "genero": "Reflexão"
+=======
+        "nome": "Um reino de carne e fogo",
+        "autor": "Jennifer L. Armentrout",
+        "descricao": "Sangue e Cinzas é um romance arrebatador e impossível de parar de ler.",
+        "genero": "Fantasia contemporânea"
+>>>>>>> 8ae12fd747836ae3404bea8c71fd6926ae48fbec
     })
     assert response.status_code == 200
     print(response.status_code, response.json())
@@ -47,7 +54,11 @@ def test_atualizar_livro():
     assert response.json()["nome"] == "A Garota no Trem"
 
 def test_deletar_livro():
+<<<<<<< HEAD
     id_livro = 194
+=======
+    id_livro = 195
+>>>>>>> 8ae12fd747836ae3404bea8c71fd6926ae48fbec
     
     response = client.delete(f"/livros/{id_livro}")
     assert response.status_code == 200

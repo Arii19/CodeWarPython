@@ -76,6 +76,7 @@ def obter_livros_por_autor(autor: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Nenhum livro encontrado para esse autor")
     return livros
 
+<<<<<<< HEAD
 
 @app.post("/livros", response_model=schemas.LivroResponse)
 def criar_livro(livro: schemas.LivroCreate, db: Session = Depends(get_db)):
@@ -98,6 +99,18 @@ def criar_livro(livro: schemas.LivroCreate, db: Session = Depends(get_db)):
     return novo_livro
 
 
+=======
+# Endpoint POST para criar um novo livro
+@app.post("/livros", response_model=schemas.LivroResponse)
+def criar_livro(livro: schemas.LivroCreate, db: Session = Depends(get_db)):
+    novo_livro = models.Livro(**livro.model_dump())
+    db.add(novo_livro)
+    db.commit()
+    db.refresh(novo_livro)
+    logger.info(f"📘 Livro criado: {novo_livro.nome} (ID: {novo_livro.id}) por {novo_livro.autor}")
+    return novo_livro
+
+>>>>>>> 8ae12fd747836ae3404bea8c71fd6926ae48fbec
 # Endpoint PUT para atualizar um livro existente 
 @app.put("/livros/{id}", response_model=schemas.LivroResponse)
 def atualizar_livro(id: int, livro: schemas.LivroUpdate, db: Session = Depends(get_db)):
@@ -122,4 +135,8 @@ def deletar_livro(id: int, db: Session = Depends(get_db)):
     livro.data_exclusao = datetime.now(timezone.utc)
     db.commit()
     logger.warning(f"🗑 Livro excluído logicamente: {livro.nome} (ID: {livro.id})")
+<<<<<<< HEAD
     return livro
+=======
+    return livro
+>>>>>>> 8ae12fd747836ae3404bea8c71fd6926ae48fbec
