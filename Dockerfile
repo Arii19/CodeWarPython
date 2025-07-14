@@ -9,7 +9,7 @@ WORKDIR /app
 COPY . .
 
 # Instala dependências
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 # Exponha a porta usada pela FastAPI
 EXPOSE 8000
