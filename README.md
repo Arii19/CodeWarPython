@@ -4,7 +4,7 @@
 
 Uma API RESTful simples para gerenciamento de livros, desenvolvida com [FastAPI](https://fastapi.tiangolo.com/), com suporte a criação, leitura, atualização, exclusão lógica e buscas por nome ou autor.
 
-Para acessar: https://api-biblioteca-online.onrender.com
+Para acessar: https://api-biblioteca-lg6i.onrender.com
 ---
 
 ## 🚀 Funcionalidades
@@ -37,5 +37,5 @@ Para acessar: https://api-biblioteca-online.onrender.com
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/nome-do-repositorio.git
+git clone https://github.com/Arii19/CodeWarPython.git
 
