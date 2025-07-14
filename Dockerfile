@@ -1,18 +1,18 @@
-# Etapa base
-# Etapa base
 FROM python:3.11
 
-# Define diretório de trabalho
 WORKDIR /app
 
-# Copia os arquivos
+# Instalar dependências do sistema para compilar libs Python
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY . .
 
-# Instala dependências
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Exponha a porta usada pela FastAPI
 EXPOSE 8000
 
-# Comando para rodar a aplicação
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "10000", "--reload"]
