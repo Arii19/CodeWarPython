@@ -2,10 +2,6 @@
 venv/
 .env
 
-# Banco de dados SQLite
-*.sqlite3
-*.db
-
 # Cache do Pytest
 .pytest_cache/
 __pycache__/
