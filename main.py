@@ -26,7 +26,7 @@ models.Base.metadata.create_all(bind=engine)
 # Endpoint raiz para dar boas-vindas e instruções básicas de uso
 @app.get("/")
 def raiz():
-    return {"mensagem": "🚀 API da Biblioteca está no ar! Seja bem-vindo(a)!, "
+    return {"mensagem": "API da Biblioteca está no ar! Seja bem-vindo(a)!, "
     "Você pode acessar os endpoints para gerenciar livros."
     "\n Basta colocar a plavra livros no final da URL, por exemplo: /livros"
     "\nMas se você quiser pesquisar por id, basta colocar o id do livro no final da URL, por exemplo: /livros/1"}
@@ -94,7 +94,7 @@ def criar_livro(livro: schemas.LivroCreate, db: Session = Depends(get_db)):
     db.add(novo_livro)
     db.commit()
     db.refresh(novo_livro)
-    logger.info(f"📘 Livro criado: {novo_livro.nome} (ID: {novo_livro.id}) por {novo_livro.autor}")
+    logger.info(f"Livro criado: {novo_livro.nome} (ID: {novo_livro.id}) por {novo_livro.autor}")
     return novo_livro
 
 
@@ -110,7 +110,7 @@ def atualizar_livro(id: int, livro: schemas.LivroUpdate, db: Session = Depends(g
     livro_db.data_edicao = datetime.now(timezone.utc)
     db.commit()
     db.refresh(livro_db)
-    logger.info(f"✏️ Livro atualizado: {livro_db.nome} (ID: {livro_db.id})")
+    logger.info(f"Livro atualizado: {livro_db.nome} (ID: {livro_db.id})")
     return livro_db
 
 # Endpoint DELETE que faz exclusão lógica de um livro (marca a data de exclusão)
@@ -121,5 +121,5 @@ def deletar_livro(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Livro não encontrado")
     livro.data_exclusao = datetime.now(timezone.utc)
     db.commit()
-    logger.warning(f"🗑 Livro excluído logicamente: {livro.nome} (ID: {livro.id})")
+    logger.warning(f"Livro excluído logicamente: {livro.nome} (ID: {livro.id})")
     return livro

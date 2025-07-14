@@ -47,11 +47,7 @@ def test_atualizar_livro():
     assert response.json()["nome"] == "A Garota no Trem"
 
 def test_deletar_livro():
-<<<<<<< HEAD
     id_livro = 194
-=======
-    id_livro = 195
->>>>>>> 8ae12fd747836ae3404bea8c71fd6926ae48fbec
     
     response = client.delete(f"/livros/{id_livro}")
     assert response.status_code == 200

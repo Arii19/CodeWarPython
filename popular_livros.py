@@ -226,7 +226,7 @@ def inserir_livros_iniciais():
 
     db.commit()
     db.close()
-    print("✅ Livros inseridos com sucesso.")
+    print("Livros inseridos com sucesso.")
 
 if __name__ == "__main__":
     inserir_livros_iniciais()
