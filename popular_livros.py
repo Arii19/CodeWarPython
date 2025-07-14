@@ -10,7 +10,6 @@ from datetime import datetime, UTC
 # Cria as tabelas se não existirem
 Base.metadata.create_all(bind=engine)
 
-
 def inserir_livros_iniciais():
     db: Session = SessionLocal()
 
