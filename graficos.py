@@ -136,6 +136,27 @@ else:
         colunas_para_exibir = ['nome', 'autor', 'genero']
         st.dataframe(df_filtrado[colunas_para_exibir], use_container_width=True, height=400)
 
+                # --- Capas e Descrições dos Livros ---
+        st.markdown("### 🖼️ Capas e Descrições dos Livros Filtrados")
+
+        for _, row in df_filtrado.iterrows():
+            with st.container():
+                col1, col2 = st.columns([1, 3])
+                with col1:
+                    if pd.notna(row.get('capa')) and row['capa']:
+                        st.image(row['capa'], use_column_width=True)
+                    else:
+                        st.write("📕 Capa não disponível.")
+                with col2:
+                    st.markdown(f"**📖 {row['nome']}**")
+                    st.markdown(f"*Autor:* {row['autor']}")
+                    if pd.notna(row.get('descricao')) and str(row['descricao']).strip():
+                        st.markdown(f"*Descrição:* {row['descricao']}")
+                    else:
+                        st.markdown("*Descrição não disponível.*")
+            st.divider()
+
+
         excel_bytes = gerar_excel(df_filtrado[colunas_para_exibir])
         st.download_button(
             label="📥 Exportar para Excel",

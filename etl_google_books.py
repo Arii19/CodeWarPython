@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import requests
 from database import SessionLocal
 from models import Livro
+ from urllib.parse import quote_plus
 
 def extract():
     # Extrai dados da API do Google Books para livros de um autor específico
@@ -22,7 +23,9 @@ def extract():
                 "title": info.get("title"),
                 "author": ", ".join(info.get("authors", [])),
                 "textSnippet": info.get("description", ""),  
-                "categories": ", ".join(info.get("categories", []))
+                "categories": ", ".join(info.get("categories", [])),
+                "thumbnail": info.get("thumbnail", "")
+
             })
 
         df = pd.DataFrame(livros)
@@ -33,6 +36,44 @@ def extract():
     except Exception as e:
         print(f"Erro na extração: {e}")
 
+def atualizar_capas():
+    session = SessionLocal()
+    
+    # Buscar livros que não têm capa
+    livros_sem_capa = session.query(Livro).filter((Livro.capa == None) | (Livro.capa == "")).all()
+    
+    for livro in livros_sem_capa:
+        titulo = livro.nome
+        
+        # Escapar caracteres especiais para URL (ex: espaços)
+       
+        titulo_encoded = quote_plus(titulo)
+        
+        # Montar URL da API Google Books para buscar pelo título
+        url = f"https://www.googleapis.com/books/v1/volumes?q={titulo_encoded}"
+        
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                dados = response.json()
+                items = dados.get("items", [])
+                
+                if items:
+                    volume_info = items[0].get("volumeInfo", {})
+                    image_links = volume_info.get("imageLinks", {})
+                    capa_url = image_links.get("thumbnail") or image_links.get("smallThumbnail")
+                    
+                    if capa_url:
+                        livro.capa = capa_url
+                        print(f"Capa atualizada para '{titulo}': {capa_url}")
+                        
+            else:
+                print(f"Erro ao buscar '{titulo}': status {response.status_code}")
+        except Exception as e:
+            print(f"Erro na requisição para '{titulo}': {e}")
+
+    session.commit()  # <--- Adicione isso para salvar as alterações!
+    session.close()
     
 def transform(df):
     # Transforma o DataFrame renomeando colunas, tratando nulos e agrupando gêneros
@@ -127,3 +168,4 @@ def load(df):
 dados = extract()
 dados_tratados = transform(dados)
 load(dados_tratados)
+atualizar_capas()
