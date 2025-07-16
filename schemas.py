@@ -11,6 +11,7 @@ class LivroBase(BaseModel):
     autor: str
     descricao: str 
     genero: str
+    capa: Optional[str] = None  # Capa do livro, opcional
 
 # Esquema para criação de livros (POST)
 class LivroCreate(LivroBase):

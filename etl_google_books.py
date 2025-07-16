@@ -3,9 +3,9 @@ import pandas as pd
 from os.path import join
 from datetime import datetime, timedelta
 import requests
-from database import SessionLocal
+from postgre import SessionLocal
 from models import Livro
- from urllib.parse import quote_plus
+from urllib.parse import quote_plus
 
 def extract():
     # Extrai dados da API do Google Books para livros de um autor específico
@@ -137,21 +137,25 @@ def transform(df):
         raise
 
 
+from datetime import datetime, timezone
+
 def load(df):
-    # Carrega os dados no banco de dados SQLite
     try:
         session = SessionLocal()
         count_novos = 0
 
         for _, row in df.iterrows():
-
+            # Verifica se o livro já existe no banco (nome + autor)
             livro_existente = session.query(Livro).filter_by(nome=row["nome"], autor=row["autor"]).first()
+            
             if not livro_existente:
                 novo_livro = Livro(
                     nome=row["nome"],
                     autor=row["autor"],
-                    descricao=row["descricao"],
-                    genero=row["genero"]
+                    descricao=row["descricao"] or "",  # caso seja None, evitar erro
+                    genero=row.get("genero_principal", row["genero"]) or "Outros",  # usa o gênero principal criado
+                    capa=row.get("thumbnail", "") or "",  # Caso venha capa no dataframe, se não, vazio
+                    data_inclusao=datetime.now(timezone.utc)
                 )
                 session.add(novo_livro)
                 count_novos += 1
@@ -164,6 +168,7 @@ def load(df):
         raise
     finally:
         session.close()
+
 
 dados = extract()
 dados_tratados = transform(dados)
