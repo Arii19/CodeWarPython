@@ -1,11 +1,11 @@
 from fastapi import FastAPI, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 from typing import List
-from database import SessionLocal, engine
+from postgre import SessionLocal, engine
 import models
 import schemas
 from datetime import datetime, timezone
-from database import engine
+from postgre import engine
 from models import Base
 import logging
 from logger import logger
