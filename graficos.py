@@ -2,36 +2,57 @@ import requests
 import pandas as pd
 import streamlit as st
 import plotly.express as px
+from io import BytesIO
 
 BASE_URL = "https://api-biblioteca-lg6i.onrender.com/livros"
 
 def extract():
     try:
         response = requests.get(BASE_URL)
-        if response.status_code != 200:
-            raise Exception(f"Erro ao acessar a API: {response.status_code}")
-        
+        response.raise_for_status()
         dados = response.json()
-        
-        if not dados:
-            print("Nenhum dado encontrado na API.")
-            return pd.DataFrame()
-        
-        df = pd.DataFrame(dados)
-        print("DataFrame extraído:")
-        print(df.head())
-        
-        return df
-
+        return pd.DataFrame(dados) if dados else pd.DataFrame()
     except Exception as e:
-        print(f"Erro na extração: {e}")
+        st.error(f"Erro ao acessar a API: {e}")
         return pd.DataFrame()
 
-# --- Configurações Streamlit ---
-st.set_page_config(layout="wide", page_title="Dashboard de Livros")
+# Função para exportar dados para Excel
+def gerar_excel(df):
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+        df.to_excel(writer, sheet_name="Livros", index=False)
+    output.seek(0)
+    return output
 
-# Centraliza o título usando HTML
-st.markdown("<h1 style='text-align: center; color: #007bff;'>📚 Dashboard de Livros</h1>", unsafe_allow_html=True)
+# --- Configurações da Página ---
+st.set_page_config(layout="wide", page_title="📚 Dashboard de Livros")
+
+# --- Estilo Customizado ---
+st.markdown("""
+    <style>
+        .main {
+            background-color: #121212;
+        }
+        .stDataFrame div {
+            font-size: 16px;
+        }
+        .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# --- Título ---
+st.markdown("<h1 style='text-align: center; color: #1E90FF;'>📚 Dashboard de Livros</h1>", unsafe_allow_html=True)
+
+# --- Tema ---
+tema = st.sidebar.radio("🎨 Escolha o Tema", ["Escuro", "Claro"])
+
+if tema == "Claro":
+    template_plotly = "plotly_white"
+else:
+    template_plotly = "plotly_dark"
 
 # --- Extração de Dados ---
 df = extract()
@@ -39,96 +60,86 @@ df = extract()
 if df.empty:
     st.warning("Nenhum dado encontrado. Verifique a API.")
 else:
-    # --- Sidebar com Filtros ---
-    st.sidebar.header("Filtros")
+    st.sidebar.header("🔍 Filtros")
+    st.sidebar.divider()
 
-    # Filtro por Gênero
-    todos_generos = ['Todos'] + sorted(df['genero'].unique().tolist())
-    genero_selecionado = st.sidebar.selectbox("Filtrar por Gênero:", todos_generos)
+    if st.sidebar.button("🔄 Limpar Filtros"):
+        st.experimental_rerun()
 
-    # Filtro por Autor
-    todos_autores = ['Todos'] + sorted(df['autor'].unique().tolist())
-    autor_selecionado = st.sidebar.selectbox("Filtrar por Autor:", todos_autores)
+    genero_opcoes = ['Todos'] + sorted(df['genero'].unique())
+    genero = st.sidebar.selectbox("Filtrar por Gênero:", genero_opcoes)
 
-    # Filtro por Título (Adicionando um filtro de busca por texto)
-    busca_titulo = st.sidebar.text_input("Buscar por Título do Livro:", "").lower()
+    autor_opcoes = ['Todos'] + sorted(df['autor'].unique())
+    autor = st.sidebar.selectbox("Filtrar por Autor:", autor_opcoes)
 
+    titulo = st.sidebar.text_input("Buscar por Título do Livro:")
+
+    # --- Filtros ---
     df_filtrado = df.copy()
 
-    if genero_selecionado != 'Todos':
-        df_filtrado = df_filtrado[df_filtrado['genero'] == genero_selecionado]
-    
-    if autor_selecionado != 'Todos':
-        df_filtrado = df_filtrado[df_filtrado['autor'] == autor_selecionado]
-
-    if busca_titulo: # Aplica o filtro de título se a busca não estiver vazia
-        df_filtrado = df_filtrado[df_filtrado['nome'].str.lower().str.contains(busca_titulo)]
+    if genero != 'Todos':
+        df_filtrado = df_filtrado[df_filtrado['genero'] == genero]
+    if autor != 'Todos':
+        df_filtrado = df_filtrado[df_filtrado['autor'] == autor]
+    if titulo:
+        df_filtrado = df_filtrado[df_filtrado['nome'].str.lower().str.contains(titulo.lower())]
 
     if df_filtrado.empty:
         st.warning("Nenhum livro encontrado para os filtros selecionados.")
     else:
-        # --- Cálculo das Contagens (com base nos dados filtrados) ---
-        contagem_autores = df_filtrado['autor'].value_counts().reset_index()
-        contagem_autores.columns = ['autor', 'quantidade_de_livros']
-        top_autores = contagem_autores.head(10)
+        # --- Contagens ---
+        top_autores = df_filtrado['autor'].value_counts().head(10).reset_index()
+        top_autores.columns = ['autor', 'quantidade_de_livros']
 
-        contagem_generos = df_filtrado['genero'].value_counts().reset_index()
-        contagem_generos.columns = ['genero', 'quantidade_de_genero']
-        top_generos = contagem_generos.head(10)
+        top_generos = df_filtrado['genero'].value_counts().head(10).reset_index()
+        top_generos.columns = ['genero', 'quantidade_de_genero']
 
-        # --- Layout das Colunas para Gráficos ---
-        col1, col_espaco, col2 = st.columns([8, 1, 8])
+        # --- Gráficos ---
+        col1, col2 = st.columns([1, 1], gap="large")
 
-        # --- Gráfico de Autores ---
         with col1:
-            st.subheader("Autores com Mais Livros Cadastrados")
+            st.subheader("👩‍💻 Autores com Mais Livros")
             fig1 = px.bar(
                 top_autores,
                 x='autor',
                 y='quantidade_de_livros',
                 text='quantidade_de_livros',
                 color='autor',
-                color_discrete_sequence=px.colors.qualitative.Pastel,
-                height=500,
-                template='seaborn',
-                labels={'autor': 'Nome do Autor', 'quantidade_de_livros': 'Número de Livros'},
+                color_discrete_sequence=px.colors.qualitative.Vivid,
+                height=450,
+                template=template_plotly,
                 title='Top 10 Autores'
             )
-            fig1.update_traces(textfont_size=12, textangle=0, textposition="outside")
-            fig1.update_layout(showlegend=False)
-            fig1.update_xaxes(tickangle=45)
+            fig1.update_traces(textposition="outside")
+            fig1.update_layout(showlegend=False, margin=dict(t=40))
             st.plotly_chart(fig1, use_container_width=True)
 
-        # --- Gráfico de Gêneros ---
         with col2:
-            st.subheader("Gêneros Mais Cadastrados")
+            st.subheader("📚 Gêneros Mais Cadastrados")
             fig2 = px.bar(
                 top_generos,
                 x='genero',
                 y='quantidade_de_genero',
                 text='quantidade_de_genero',
                 color='genero',
-                color_discrete_sequence=px.colors.qualitative.D3,
-                height=500,
-                template='seaborn',
-                labels={'genero': 'Gênero do Livro', 'quantidade_de_genero': 'Número de Livros'},
+                color_discrete_sequence=px.colors.qualitative.Pastel,
+                height=450,
+                template=template_plotly,
                 title='Top 10 Gêneros'
             )
-            fig2.update_traces(textfont_size=12, textangle=0, textposition="outside")
-            fig2.update_layout(showlegend=False)
-            fig2.update_xaxes(tickangle=45)
+            fig2.update_traces(textposition="outside")
+            fig2.update_layout(showlegend=False, margin=dict(t=40))
             st.plotly_chart(fig2, use_container_width=True)
 
-        # --- Tabela de Livros Filtrados ---
-        st.subheader("Livros Correspondentes aos Filtros")
+        # --- Tabela e Exportação ---
+        st.markdown("### 📖 Livros Correspondentes aos Filtros")
+        colunas_para_exibir = ['nome', 'autor', 'genero']
+        st.dataframe(df_filtrado[colunas_para_exibir], use_container_width=True, height=400)
 
-        # Seleciona apenas as colunas que você quer exibir na tabela
-        # Você pode ajustar isso para mostrar apenas 'titulo', 'autor', 'genero'
-        colunas_para_tabela =  colunas_para_tabela = ['nome', 'genero']  # Adicione outras colunas se desejar
-
-        if not df_filtrado.empty:
-            # Garante que as colunas existem antes de exibi-las
-            df_tabela = df_filtrado[df_filtrado.columns.intersection(colunas_para_tabela)]
-            st.dataframe(df_tabela, use_container_width=True)
-        else:
-            st.info("Nenhum livro corresponde aos filtros aplicados.")
+        excel_bytes = gerar_excel(df_filtrado[colunas_para_exibir])
+        st.download_button(
+            label="📥 Exportar para Excel",
+            data=excel_bytes,
+            file_name="livros_filtrados.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
