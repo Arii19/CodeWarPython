@@ -139,12 +139,12 @@ with chart2:
 
 # ========== GRÁFICO DE BARRAS: TOP 10 AUTORES MAIS CADASTRADOS ==========
 st.markdown(
-    "<h3 style='text-align: center;'>🏆 Top 10 Autores com Mais Livros Cadastrados</h3>",
+    "<h3 style='text-align: center;'>🏆 Top 10 autores com mais queridos por você</h3>",
     unsafe_allow_html=True
 )
 
 st.markdown(
-    "<h4 style='text-align: center;'>Top 10 Autores com Mais Livros</h4>",
+    "<h4 style='text-align: center;'>Autores que mais te cativaram</h4>",
     unsafe_allow_html=True
 )
 
