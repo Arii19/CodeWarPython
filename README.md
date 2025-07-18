@@ -6,7 +6,7 @@ Uma API RESTful simples para gerenciamento de livros, desenvolvida com [FastAPI]
 
 Para acessar: https://api-biblioteca-lg6i.onrender.com
 
-Para acessar o aplicativo: https://diariodeleitura.streamlit.app/
+Para acessar: https://diariodeleitura.streamlit.app/
 ---
 
 ## 🚀 Funcionalidades
