@@ -123,3 +123,4 @@ def deletar_livro(id: int, db: Session = Depends(get_db)):
     db.commit()
     logger.warning(f"Livro excluído logicamente: {livro.nome} (ID: {livro.id})")
     return livro
+
