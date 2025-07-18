@@ -139,7 +139,7 @@ with chart2:
 
 # ========== GRÁFICO DE BARRAS: TOP 10 AUTORES MAIS CADASTRADOS ==========
 st.markdown(
-    "<h3 style='text-align: center;'>🏆 Top 10 autores com mais queridos por você</h3>",
+    "<h3 style='text-align: center;'>🏆 Top 10 autores mais queridos por você</h3>",
     unsafe_allow_html=True
 )
 
