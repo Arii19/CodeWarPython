@@ -1,4 +1,3 @@
-from turtle import left
 import requests
 import pandas as pd
 import streamlit as st
@@ -347,8 +346,8 @@ else:
                       {capa_html}
                       <div class="livro-info">
                         <div class="linha-titulo-autor">
-                          <h3>📖 {row['nome'], left}</h3>
-                          <p class="autor">{row['autor'], left}</p>
+                          <h3>📖 {row['nome']}</h3>
+                          <p class="autor">{row['autor']}</p>
                         </div>
                         <p class="descricao">{resumo}</p>
                         <input type="checkbox" id="{unique_id}"/>
