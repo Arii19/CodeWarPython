@@ -178,13 +178,36 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- Seu layout e inputs para cadastro ---
+import requests
+import pandas as pd
+import streamlit as st
+from io import BytesIO
 
+st.set_page_config(page_title="Biblioteca", layout="wide")  # deve ser o primeiro comando
+
+BASE_URL = "https://api-biblioteca-lg6i.onrender.com/livros"
+
+def extract():
+    try:
+        response = requests.get(BASE_URL)
+        response.raise_for_status()
+        dados = response.json()
+        return pd.DataFrame(dados) if dados else pd.DataFrame()
+    except Exception as e:
+        st.error(f"Erro ao acessar a API: {e}")
+        return pd.DataFrame()
+
+# --- Estilos customizados ---
+st.markdown("""
+<style>
+    ... /* seu CSS completo aqui, sem alterações */
+</style>
+""", unsafe_allow_html=True)
+
+# --- Cabeçalho e formulário ---
 st.markdown("<h1>📚 Bem-vindo ao Cantinho da Leitura</h1>", unsafe_allow_html=True)
 st.markdown("<h4>Explore suas leituras, exporte informações das suas leituras e acompanhe o seu progresso</h4>", unsafe_allow_html=True)
 st.divider()
-
-st.set_page_config(page_title="Biblioteca", layout="wide")
 
 st.markdown("<h2 style='text-align: center;'>📚 Insira a sua nova Leitura</h2>", unsafe_allow_html=True)
 
@@ -192,24 +215,17 @@ nome = st.text_input("Título")
 autor = st.text_input("Autor")
 descricao = st.text_area("Descrição")
 genero = st.text_input("Gênero")
-
 capa_imagem = st.file_uploader("Capa do Livro (jpg, png) - opcional", type=["jpg", "png", "jpeg"])
 
 capa_url = None
 if capa_imagem:
-    # Você pode criar uma lógica para upload da imagem
-    capa_url = f"https://meusite.com/imagens/{capa_imagem.name}"
+    capa_url = f"https://meusite.com/imagens/{capa_imagem.name}"  # simulação de URL
 
-if st.button("Adicionar Livro", key=f"botao_adicionar_livro"):
+if st.button("Adicionar Livro", key="botao_adicionar_livro"):
     if not (nome and autor and descricao and genero):
         st.warning("Preencha todos os campos obrigatórios.")
     else:
-        dados = {
-            "nome": nome,
-            "autor": autor,
-            "descricao": descricao,
-            "genero": genero,
-        }
+        dados = {"nome": nome, "autor": autor, "descricao": descricao, "genero": genero}
         if capa_url:
             dados["capa"] = capa_url
 
@@ -221,7 +237,7 @@ if st.button("Adicionar Livro", key=f"botao_adicionar_livro"):
             st.write(res.text)
         st.divider()
 
-# --- Extração dos dados ---
+# --- Extração dos dados da API ---
 df = extract()
 
 def gerar_excel(df_to_export):
@@ -234,6 +250,7 @@ def gerar_excel(df_to_export):
 if df.empty:
     st.warning("Nenhum dado encontrado. Verifique a API.")
 else:
+    # --- Filtros na barra lateral ---
     genero_opcoes = ['Todos'] + sorted(df['genero'].unique())
     genero = st.sidebar.selectbox("Filtrar por Gênero:", genero_opcoes)
 
@@ -263,119 +280,89 @@ else:
             st.markdown("### 🖼️ Saiba mais sobre os livros")
             df_para_exibir = df_filtrado
 
-        livros_por_pagina = 10
+        # --- Paginação ---
+        livros_por_pagina = 4  # 2 por linha
         total_livros = len(df_para_exibir)
         total_paginas = (total_livros - 1) // livros_por_pagina + 1
 
-        pagina_atual = st.number_input(
-            label="📄 Página",
-            min_value=1,
-            max_value=total_paginas,
-            value=1,
-            step=1
-        )
+        pagina_atual = st.number_input("📄 Página", min_value=1, max_value=total_paginas, value=1, step=1)
 
         inicio = (pagina_atual - 1) * livros_por_pagina
         fim = inicio + livros_por_pagina
         df_pagina = df_para_exibir.iloc[inicio:fim]
 
-        # --- Exibição dos cards de livros paginados (2 por linha) ---
-    for i in range(0, len(df_pagina), 4):
-        cols = st.columns([2, 2])  # duas colunas na mesma linha
+        # --- Exibição dos cards (2 por linha) ---
+        for i in range(0, len(df_pagina), 2):
+            cols = st.columns(2)
+            for j, col in enumerate(cols):
+                idx = i + j
+                if idx >= len(df_pagina):
+                    break
+                row = df_pagina.iloc[idx]
 
-        for j, col in enumerate(cols):
-            idx = i + j
-            if idx >= len(df_pagina):
-                break
-            row = df_pagina.iloc[idx]
+                with col:
+                    capa_html = (
+                        f'<img src="{row["capa"]}" class="livro-imagem"/>'
+                        if pd.notna(row.get('capa')) and row['capa'].strip() != ''
+                        else '<div class="livro-imagem" style="background:#444; display:flex; align-items:center; justify-content:center; color:#AAA; width:200px; height:280px; border-radius:12px;">📕 Sem Capa</div>'
+                    )
 
-            with col:
-                capa_html = (
-                    f'<img src="{row["capa"]}" class="livro-imagem"/>'
-                    if pd.notna(row.get('capa')) and row['capa'].strip() != ''
-                    else '<div class="livro-imagem" style="background:#444; display:flex; align-items:center; justify-content:center; color:#AAA; width:200px; height:280px; border-radius:12px;">📕 Sem Capa</div>'
-                )
-
-                descricao_completa = (
-                    row['descricao']
-                    if pd.notna(row.get('descricao')) and str(row['descricao']).strip()
-                    else "Descrição não disponível."
-                )
-
-                limite = 150  # limite de caracteres para o resumo
-
-                if len(descricao_completa) > limite:
-                    resumo = descricao_completa[:limite] + "..."
+                    descricao_completa = row['descricao'] if pd.notna(row.get('descricao')) else "Descrição não disponível."
+                    limite = 150
+                    resumo = descricao_completa[:limite] + "..." if len(descricao_completa) > limite else descricao_completa
                     unique_id = f"toggle_{idx}"
 
-                    card_html = f"""
-                    <style>
-                      #{unique_id} {{
-                        display: none;
-                      }}
+                    if len(descricao_completa) > limite:
+                        card_html = f"""
+                        <style>
+                          #{unique_id} {{ display: none; }}
+                          label[for="{unique_id}"] {{
+                            color: #0E76A8;
+                            cursor: pointer;
+                            font-weight: bold;
+                            margin-top: 0.5rem;
+                            display: inline-block;
+                          }}
+                          .expandido_{unique_id} {{ display: none; margin-top: 0.5rem; font-size: 14px; color: #CCCCCC; }}
+                          #{unique_id}:checked ~ .expandido_{unique_id} {{ display: block; }}
+                          #{unique_id}:checked + label[for="{unique_id}"]::after {{ content: " (Leia menos)"; }}
+                          label[for="{unique_id}"]::after {{ content: " (Leia mais)"; }}
+                        </style>
 
-                      label[for="{unique_id}"] {{
-                        color: #0E76A8;
-                        cursor: pointer;
-                        font-weight: bold;
-                        margin-top: 0.5rem;
-                        display: inline-block;
-                      }}
-
-                      .expandido_{unique_id} {{
-                        display: none;
-                        margin-top: 0.5rem;
-                        font-size: 14px;
-                        color: #CCCCCC;
-                      }}
-
-                      #{unique_id}:checked ~ .expandido_{unique_id} {{
-                        display: block;
-                      }}
-
-                      #{unique_id}:checked + label[for="{unique_id}"]::after {{
-                        content: " (Leia menos)";
-                      }}
-
-                      label[for="{unique_id}"]::after {{
-                        content: " (Leia mais)";
-                      }}
-                    </style>
-
-                    <div class="livro-card">
-                      {capa_html}
-                      <div class="livro-info">
-                        <div class="linha-titulo-autor">
-                          <h3>📖 {row['nome']}</h3>
-                          <p class="autor">{row['autor']}</p>
+                        <div class="livro-card">
+                          {capa_html}
+                          <div class="livro-info">
+                            <div class="linha-titulo-autor">
+                              <h3>📖 {row['nome']}</h3>
+                              <p class="autor">{row['autor']}</p>
+                            </div>
+                            <p class="descricao">{resumo}</p>
+                            <input type="checkbox" id="{unique_id}"/>
+                            <label for="{unique_id}"></label>
+                            <div class="expandido_{unique_id}">{descricao_completa}</div>
+                          </div>
                         </div>
-                        <p class="descricao">{resumo}</p>
-                        <input type="checkbox" id="{unique_id}"/>
-                        <label for="{unique_id}"></label>
-                        <div class="expandido_{unique_id}">{descricao_completa}</div>
-                      </div>
-                    </div>
-                    """
-                    st.markdown(card_html, unsafe_allow_html=True)
-                else:
-                    card_html = f"""
-                    <div class="livro-card">
-                      {capa_html}
-                      <div class="livro-info">
-                        <div class="linha-titulo-autor">
-                          <h3>📖 {row['nome']}</h3>
-                          <p class="autor">{row['autor']}</p>
+                        """
+                    else:
+                        card_html = f"""
+                        <div class="livro-card">
+                          {capa_html}
+                          <div class="livro-info">
+                            <div class="linha-titulo-autor">
+                              <h3>📖 {row['nome']}</h3>
+                              <p class="autor">{row['autor']}</p>
+                            </div>
+                            <p class="descricao">{descricao_completa}</p>
+                          </div>
                         </div>
-                        <p class="descricao">{descricao_completa}</p>
-                      </div>
-                    </div>
-                    """
+                        """
                     st.markdown(card_html, unsafe_allow_html=True)
+
         st.divider()
 
+        # --- Exibir a tabela final de livros (apenas 1x) ---
         st.markdown("### 📖 Tabelas de livros")
         colunas_para_exibir = ['nome', 'autor', 'genero']
-
         linhas = len(df_filtrado)
         altura_por_linha = 35
         altura_minima = 100
