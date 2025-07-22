@@ -5,12 +5,8 @@ from sqlalchemy.orm import declarative_base
 from dotenv import load_dotenv
 import os
 
-load_dotenv()  # carrega as variáveis do .env para o ambiente
+url = os.environ.get('DATABASE_URL')
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL não está definida")
-
-engine = create_engine(DATABASE_URL)
+engine = create_engine(url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
