@@ -57,7 +57,7 @@ st.markdown("""
 
         .livro-imagem {
             width: 200px;
-            height: auto;
+            height: 280px;
             border-radius: 12px;
             flex-shrink: 0;
             object-fit: cover;
@@ -178,52 +178,29 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-import requests
-import pandas as pd
-import streamlit as st
-from io import BytesIO
+# ... seu código e CSS aqui ...
 
-st.set_page_config(page_title="Biblioteca", layout="wide")  # deve ser o primeiro comando
+st.set_page_config(page_title="Biblioteca", layout="wide")
 
-BASE_URL = "https://api-biblioteca-lg6i.onrender.com/livros"
-
-def extract():
-    try:
-        response = requests.get(BASE_URL)
-        response.raise_for_status()
-        dados = response.json()
-        return pd.DataFrame(dados) if dados else pd.DataFrame()
-    except Exception as e:
-        st.error(f"Erro ao acessar a API: {e}")
-        return pd.DataFrame()
-
-# --- Estilos customizados ---
-st.markdown("""
-<style>
-    ... /* seu CSS completo aqui, sem alterações */
-</style>
-""", unsafe_allow_html=True)
-
-# --- Cabeçalho e formulário ---
+# Cabeçalho
 st.markdown("<h1>📚 Bem-vindo ao Cantinho da Leitura</h1>", unsafe_allow_html=True)
 st.markdown("<h4>Explore suas leituras, exporte informações das suas leituras e acompanhe o seu progresso</h4>", unsafe_allow_html=True)
 st.divider()
 
-st.markdown("<h2 style='text-align: center;'>📚 Insira a sua nova Leitura</h2>", unsafe_allow_html=True)
-
-nome = st.text_input("Título")
-autor = st.text_input("Autor")
-descricao = st.text_area("Descrição")
-genero = st.text_input("Gênero")
+# Formulário para adicionar livros (opcional - você já tem, pode deixar ou tirar)
+nome = st.text_input("Título para adicionar")
+autor = st.text_input("Autor para adicionar")
+descricao = st.text_area("Descrição para adicionar")
+genero = st.text_input("Gênero para adicionar")
 capa_imagem = st.file_uploader("Capa do Livro (jpg, png) - opcional", type=["jpg", "png", "jpeg"])
 
 capa_url = None
 if capa_imagem:
-    capa_url = f"https://meusite.com/imagens/{capa_imagem.name}"  # simulação de URL
+    capa_url = f"https://meusite.com/imagens/{capa_imagem.name}"  # simulação
 
 if st.button("Adicionar Livro", key="botao_adicionar_livro"):
     if not (nome and autor and descricao and genero):
-        st.warning("Preencha todos os campos obrigatórios.")
+        st.warning("Preencha todos os campos obrigatórios para adicionar um livro.")
     else:
         dados = {"nome": nome, "autor": autor, "descricao": descricao, "genero": genero}
         if capa_url:
@@ -233,44 +210,33 @@ if st.button("Adicionar Livro", key="botao_adicionar_livro"):
         if res.status_code in [200, 201]:
             st.success("Livro adicionado com sucesso!")
         else:
-            st.error(f"Erro: {res.status_code}")
+            st.error(f"Erro ao adicionar livro: {res.status_code}")
             st.write(res.text)
         st.divider()
 
-# --- Extração dos dados da API ---
-df = extract()
+# *** BUSCA FICA AQUI, DEPOIS DO FORMULÁRIO ***
 
-def gerar_excel(df_to_export):
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-        df_to_export.to_excel(writer, sheet_name="Livros", index=False)
-    output.seek(0)
-    return output
+busca = st.text_input("🔎 Buscar livros (por título, autor ou gênero)")
+
+# Extração dos dados da API
+df = extract()
 
 if df.empty:
     st.warning("Nenhum dado encontrado. Verifique a API.")
 else:
-    # --- Filtros na barra lateral ---
-    genero_opcoes = ['Todos'] + sorted(df['genero'].unique())
-    genero = st.sidebar.selectbox("Filtrar por Gênero:", genero_opcoes)
-
-    autor_opcoes = ['Todos'] + sorted(df['autor'].unique())
-    autor = st.sidebar.selectbox("Filtrar por Autor:", autor_opcoes)
-
-    titulo = st.sidebar.text_input("Buscar por Título do Livro:")
-
     df_filtrado = df.copy()
-    if genero != 'Todos':
-        df_filtrado = df_filtrado[df_filtrado['genero'] == genero]
-    if autor != 'Todos':
-        df_filtrado = df_filtrado[df_filtrado['autor'] == autor]
-    if titulo:
-        df_filtrado = df_filtrado[df_filtrado['nome'].str.lower().str.contains(titulo.lower())]
+    if busca.strip():
+        busca_lower = busca.lower()
+        df_filtrado = df_filtrado[
+            df_filtrado['nome'].str.lower().str.contains(busca_lower) |
+            df_filtrado['autor'].str.lower().str.contains(busca_lower) |
+            df_filtrado['genero'].str.lower().str.contains(busca_lower)
+        ]
 
     if df_filtrado.empty:
-        st.warning("Nenhum livro encontrado para os filtros selecionados.")
+        st.warning("Nenhum livro encontrado para a busca realizada.")
     else:
-        filtros_padrao = genero == "Todos" and autor == "Todos" and titulo.strip() == ""
+        filtros_padrao = not busca.strip()
 
         st.divider()
         if filtros_padrao:
@@ -280,8 +246,8 @@ else:
             st.markdown("### 🖼️ Saiba mais sobre os livros")
             df_para_exibir = df_filtrado
 
-        # --- Paginação ---
-        livros_por_pagina = 4  # 2 por linha
+        # Paginação e exibição
+        livros_por_pagina = 4
         total_livros = len(df_para_exibir)
         total_paginas = (total_livros - 1) // livros_por_pagina + 1
 
@@ -291,7 +257,6 @@ else:
         fim = inicio + livros_por_pagina
         df_pagina = df_para_exibir.iloc[inicio:fim]
 
-        # --- Exibição dos cards (2 por linha) ---
         for i in range(0, len(df_pagina), 2):
             cols = st.columns(2)
             for j, col in enumerate(cols):
@@ -300,77 +265,107 @@ else:
                     break
                 row = df_pagina.iloc[idx]
 
-                with col:
-                    capa_html = (
-                        f'<img src="{row["capa"]}" class="livro-imagem"/>'
-                        if pd.notna(row.get('capa')) and row['capa'].strip() != ''
-                        else '<div class="livro-imagem" style="background:#444; display:flex; align-items:center; justify-content:center; color:#AAA; width:200px; height:280px; border-radius:12px;">📕 Sem Capa</div>'
-                    )
+                capa_html = (
+                    f'<img src="{row["capa"]}" class="livro-imagem"/>'
+                    if pd.notna(row.get('capa')) and row['capa'].strip() != ''
+                    else '<div class="livro-imagem" style="background:#444; display:flex; align-items:center; justify-content:center; color:#AAA; width:200px; height:280px; border-radius:12px;">📕 Sem Capa</div>'
+                )
 
-                    descricao_completa = row['descricao'] if pd.notna(row.get('descricao')) else "Descrição não disponível."
-                    limite = 150
-                    resumo = descricao_completa[:limite] + "..." if len(descricao_completa) > limite else descricao_completa
-                    unique_id = f"toggle_{idx}"
+                descricao_completa = row['descricao'] if pd.notna(row.get('descricao')) else "Descrição não disponível."
+                limite = 150
+                resumo = descricao_completa[:limite] + "..." if len(descricao_completa) > limite else descricao_completa
+                unique_id = f"toggle_{idx}"
 
-                    if len(descricao_completa) > limite:
-                        card_html = f"""
-                        <style>
-                          #{unique_id} {{ display: none; }}
-                          label[for="{unique_id}"] {{
-                            color: #0E76A8;
-                            cursor: pointer;
-                            font-weight: bold;
-                            margin-top: 0.5rem;
-                            display: inline-block;
-                          }}
-                          .expandido_{unique_id} {{ display: none; margin-top: 0.5rem; font-size: 14px; color: #CCCCCC; }}
-                          #{unique_id}:checked ~ .expandido_{unique_id} {{ display: block; }}
-                          #{unique_id}:checked + label[for="{unique_id}"]::after {{ content: " (Leia menos)"; }}
-                          label[for="{unique_id}"]::after {{ content: " (Leia mais)"; }}
-                        </style>
+                if len(descricao_completa) > limite:
+                    card_html = f"""
+                    <style>
+                      #{unique_id} {{ display: none; }}
+                      label[for="{unique_id}"] {{
+                        color: #0E76A8;
+                        cursor: pointer;
+                        font-weight: bold;
+                        margin-top: 0.5rem;
+                        display: inline-block;
+                      }}
+                      .expandido_{unique_id} {{ display: none; margin-top: 0.5rem; font-size: 14px; color: #CCCCCC; }}
+                      #{unique_id}:checked ~ .expandido_{unique_id} {{ display: block; }}
+                      #{unique_id}:checked + label[for="{unique_id}"]::after {{ content: " (Leia menos)"; }}
+                      label[for="{unique_id}"]::after {{ content: " (Leia mais)"; }}
+                    </style>
 
-                        <div class="livro-card">
-                          {capa_html}
-                          <div class="livro-info">
-                            <div class="linha-titulo-autor">
-                              <h3>📖 {row['nome']}</h3>
-                              <p class="autor">{row['autor']}</p>
-                            </div>
-                            <p class="descricao">{resumo}</p>
-                            <input type="checkbox" id="{unique_id}"/>
-                            <label for="{unique_id}"></label>
-                            <div class="expandido_{unique_id}">{descricao_completa}</div>
-                          </div>
+                    <div class="livro-card">
+                      {capa_html}
+                      <div class="livro-info">
+                        <div class="linha-titulo-autor">
+                          <h3>📖 {row['nome']}</h3>
+                          <p class="autor">{row['autor']}</p>
                         </div>
-                        """
-                    else:
-                        card_html = f"""
-                        <div class="livro-card">
-                          {capa_html}
-                          <div class="livro-info">
-                            <div class="linha-titulo-autor">
-                              <h3>📖 {row['nome']}</h3>
-                              <p class="autor">{row['autor']}</p>
-                            </div>
-                            <p class="descricao">{descricao_completa}</p>
-                          </div>
+                        <p class="descricao">{resumo}</p>
+                        <input type="checkbox" id="{unique_id}"/>
+                        <label for="{unique_id}"></label>
+                        <div class="expandido_{unique_id}">{descricao_completa}</div>
+                      </div>
+                    </div>
+                    """
+                else:
+                    card_html = f"""
+                    <div class="livro-card">
+                      {capa_html}
+                      <div class="livro-info">
+                        <div class="linha-titulo-autor">
+                          <h3>📖 {row['nome']}</h3>
+                          <p class="autor">{row['autor']}</p>
                         </div>
-                        """
-                    st.markdown(card_html, unsafe_allow_html=True)
+                        <p class="descricao">{descricao_completa}</p>
+                      </div>
+                    </div>
+                    """
+                col.markdown(card_html, unsafe_allow_html=True)
 
         st.divider()
 
-        # --- Exibir a tabela final de livros (apenas 1x) ---
-        st.markdown("### 📖 Tabelas de livros")
-        colunas_para_exibir = ['nome', 'autor', 'genero']
-        linhas = len(df_filtrado)
-        altura_por_linha = 35
-        altura_minima = 100
-        altura_maxima = 600
-        altura_tabela = max(altura_minima, min(linhas * altura_por_linha, altura_maxima))
+        # --- Atualizar ou Deletar livro ---
 
-        st.dataframe(
-            df_filtrado[colunas_para_exibir],
-            use_container_width=True,
-            height=altura_tabela
-        )
+        st.markdown("### ✏️ Atualizar ou Excluir Livro")
+
+        # Usa o primeiro livro do resultado da busca para atualizar/deletar
+        livro = df_filtrado.iloc[0]
+
+        st.markdown(f"**Livro selecionado:** 📖 {livro['nome']} - Autor: {livro['autor']}")
+
+        novo_nome = st.text_input("Novo nome", value=livro.get("nome", ""))
+        novo_autor = st.text_input("Novo autor", value=livro.get("autor", ""))
+        nova_descricao = st.text_area("Nova descrição", value=livro.get("descricao", ""))
+        novo_genero = st.text_input("Novo gênero", value=livro.get("genero", ""))
+        nova_capa = st.text_input("Nova URL da capa", value=livro.get("capa", ""))
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if st.button("🔄 Atualizar livro"):
+                dados_atualizados = {
+                    "nome": novo_nome,
+                    "autor": novo_autor,
+                    "descricao": nova_descricao,
+                    "genero": novo_genero,
+                    "capa": nova_capa
+                }
+                r = requests.put(f"{BASE_URL}/{livro['id']}", json=dados_atualizados)
+                if r.status_code == 200:
+                    st.success("✅ Livro atualizado com sucesso!")
+                else:
+                    st.error(f"Erro ao atualizar: {r.status_code}")
+                    st.write(r.text)
+
+        with col2:
+            confirm = st.checkbox("☑️ Confirmo que desejo excluir este livro")
+            if st.button("🗑️ Excluir livro"):
+                if confirm:
+                    r = requests.delete(f"{BASE_URL}/{livro['id']}")
+                    if r.status_code == 200:
+                        st.success("❌ Livro excluído com sucesso!")
+                    else:
+                        st.error(f"Erro ao excluir: {r.status_code}")
+                        st.write(r.text)
+                else:
+                    st.warning("☝️ Marque a confirmação para excluir antes de clicar no botão.")
