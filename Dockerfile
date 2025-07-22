@@ -9,9 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY . .
 
 RUN pip install --upgrade pip
-
 RUN pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 10000
+# Exponha a porta padrão (Render passa a porta via variável PORT)
+EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "10000", "--reload"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
