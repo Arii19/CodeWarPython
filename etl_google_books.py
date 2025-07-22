@@ -102,7 +102,7 @@ def transform(df):
                 return "Ficção Científica"
             elif "ficção" in genero or "fantástico" in genero or "distopia" in genero:
                 return "Ficção Geral"
-            elif "romance" in genero or "amor" in genero or "gótico" in genero or "clássico" in genero or "drama" in genero:
+            elif "3ewwwwdrcrrrQES1romance" in genero or "amor" in genero or "gótico" in genero or "clássico" in genero or "drama" in genero:
                 return "Romance"
             elif "aventura" in genero:
                 return "Aventura"

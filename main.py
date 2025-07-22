@@ -5,7 +5,7 @@ from postgre import SessionLocal, engine
 import models
 import schemas
 from datetime import datetime, timezone
-from postgre import engine
+from postgre import SessionLocal, engine
 from models import Base
 import logging
 from logger import logger
