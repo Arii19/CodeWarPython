@@ -5,7 +5,7 @@ import plotly.express as px
 from datetime import datetime
 
 # ========== CONFIGURAÇÃO ==========
-st.set_page_config(page_title="📚 Se Dashboard de Livros", layout="wide")
+st.set_page_config(page_title="📚 Dashboard de Livros", layout="wide")
 
 # ========== FUNÇÃO DE EXTRAÇÃO ==========
 @st.cache_data
@@ -46,12 +46,12 @@ df_filtrado = df[
 
 # ========== TÍTULO ==========
 st.markdown(
-    "<h2 style='text-align: center;'>📈 📚 Análise das suas leituras</h2>",
+    "<h2 style='text-align: center;'>📈 📚 Análise dos Livros</h2>",
     unsafe_allow_html=True
 )
 
 st.markdown(
-    "<h4 style='text-align: center;'>Leituras novas ao longo do lempo</h4>",
+    "<h4 style='text-align: center;'>Inclusão de Livros ao Longo do Tempo</h4>",
     unsafe_allow_html=True
 )
 
@@ -66,7 +66,7 @@ st.divider()
 # ========== GRÁFICO: LIVROS POR GÊNERO ==========
 
 st.markdown(
-    "<h3 style='text-align: center;'>📘 Quantidade de Livros lidos por Gênero</h3>",
+    "<h3 style='text-align: center;'>📘 Quantidade de Livros por Gênero</h3>",
     unsafe_allow_html=True
 )
 
@@ -108,7 +108,7 @@ fig_autores = px.pie(
 )
 chart1, chart2 = st.columns((2))
 with chart1:
-    st.subheader('📚 Seus Top 10 autores mais lidos')
+    st.subheader('📚 Top 10 Autores Mais Cadastrados')
     fig = px.pie(top_autores, values = "autor", names = "quantidade", template = "plotly_dark")
     fig_autores.update_traces(text = top_autores["quantidade"], textposition = "inside")
     st.plotly_chart(fig_autores,use_container_width=True)
@@ -131,7 +131,7 @@ fig_generos = px.pie(
 )
 
 with chart2:
-    st.subheader('🏆 Seus Top 10 Gêneros mais lidos')
+    st.subheader('🏆 Top 10 Gêneros Mais Listados')
     fig = px.pie(top_generos, values = "genero", names = "quantidade", template = "gridon")
     fig_generos.update_traces(text=top_generos["quantidade"], textposition="inside")
     st.plotly_chart(fig_generos,use_container_width=True)
@@ -139,12 +139,12 @@ with chart2:
 
 # ========== GRÁFICO DE BARRAS: TOP 10 AUTORES MAIS CADASTRADOS ==========
 st.markdown(
-    "<h3 style='text-align: center;'>🏆 Top 10 autores mais queridos por você</h3>",
+    "<h3 style='text-align: center;'>🏆 Top 10 Autores com Mais Livros Cadastrados</h3>",
     unsafe_allow_html=True
 )
 
 st.markdown(
-    "<h4 style='text-align: center;'>Autores que mais te cativaram</h4>",
+    "<h4 style='text-align: center;'>Top 10 Autores com Mais Livros</h4>",
     unsafe_allow_html=True
 )
 
@@ -175,7 +175,7 @@ with col_centro:
 # ========== GRÁFICO: INCLUSÕES POR ANO ==========
 
 st.markdown(
-    "<h3 style='text-align: center;'>📈 Evolução da sua leitura</h3>",
+    "<h3 style='text-align: center;'>📈 Evolução de Inclusão de Livros</h3>",
     unsafe_allow_html=True
 )
 
