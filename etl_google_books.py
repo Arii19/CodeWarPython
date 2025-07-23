@@ -1,7 +1,6 @@
-import os
 import pandas as pd
 from os.path import join
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 import requests
 from postgre import SessionLocal
 from models import Livro

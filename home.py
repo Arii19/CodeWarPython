@@ -15,7 +15,6 @@ def extract():
         st.error(f"Erro ao acessar a API: {e}")
         return pd.DataFrame()
 
-
 st.markdown("""
     <style>
         body {
@@ -176,51 +175,8 @@ st.markdown("""
         input[type=number]::-webkit-inner-spin-button:focus {
             background-color: #075E8D !important;
         }
-            
-    
     </style>
 """, unsafe_allow_html=True)
-
-# --- CSS para estilizar o menu personalizado ---
-st.markdown("""
-    <style>
-    /* Estiliza o radio personalizado na sidebar */
-    div[data-testid="stSidebar"] div[role="radiogroup"] > label {
-        background-color: #232326;
-        padding: 10px 18px;
-        margin-bottom: 6px;
-        border-radius: 10px;
-        color: #D2E0E2;
-        font-weight: bold;
-        border: 2px solid transparent;
-        transition: all 0.2s ease-in-out;
-        cursor: pointer;
-    }
-    div[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
-        border: 2px solid #0E76A8;
-        background-color: #2c2f33;
-    }
-    div[data-testid="stSidebar"] div[role="radiogroup"] > label[data-selected="true"] {
-        border: 2px solid #0E76A8;
-        background-color: #0E76A8;
-        color: white;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# --- Menu personalizado ---
-pagina = st.sidebar.radio("Menu", ["🏠 Home", "📚 Biblioteca", "➕ Adicionar Livro"])
-
-# --- Conteúdo de cada "página" ---
-if pagina == "🏠 Home":
-    st.title("Página Inicial")
-    st.write("Conteúdo da home.")
-elif pagina == "📚 Biblioteca":
-    st.title("Livros")
-    st.write("Lista de livros aqui.")
-elif pagina == "➕ Adicionar Livro":
-    st.title("Adicionar Livro")
-    st.write("Formulário para adicionar livros.")
 
 # ... seu código e CSS aqui ...
 
@@ -408,6 +364,7 @@ else:
                     r = requests.delete(f"{BASE_URL}/{livro['id']}")
                     if r.status_code == 200:
                         st.success("❌ Livro excluído com sucesso!")
+                        st.rerun()
                     else:
                         st.error(f"Erro ao excluir: {r.status_code}")
                         st.write(r.text)

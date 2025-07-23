@@ -5,7 +5,7 @@ import plotly.express as px
 from datetime import datetime
 
 # ========== CONFIGURAÇÃO ==========
-st.set_page_config(page_title="📚 Dashboard de Livros", layout="wide")
+st.set_page_config(page_title="📚 Se Dashboard de Livros", layout="wide")
 
 # ========== FUNÇÃO DE EXTRAÇÃO ==========
 @st.cache_data
@@ -31,27 +31,76 @@ df['data_inclusao'] = pd.to_datetime(df['data_inclusao'])
 df['ano_inclusao'] = df['data_inclusao'].dt.year
 
 # ========== SIDEBAR ==========
-st.sidebar.title("📊 Filtros")
+if df.empty:
+    st.warning("Nenhum dado encontrado. Verifique a API.")
+else:
+    # --- Sidebar com Filtros ---
+    st.sidebar.header("Filtros")
 
-autores = df['autor'].dropna().unique()
-generos = df['genero'].dropna().unique()
+    # Filtro por Gênero
+    todos_generos = ['Todos'] + sorted(df['genero'].unique().tolist())
+    genero_selecionado = st.sidebar.selectbox("Filtrar por Gênero:", todos_generos)
 
-autor_sel = st.sidebar.multiselect("Autor", autores, default=autores)
-genero_sel = st.sidebar.multiselect("Gênero", generos, default=generos)
+    # Filtro por Autor
+    todos_autores = ['Todos'] + sorted(df['autor'].unique().tolist())
+    autor_selecionado = st.sidebar.selectbox("Filtrar por Autor:", todos_autores)
 
-df_filtrado = df[
-    df['autor'].isin(autor_sel) & 
-    df['genero'].isin(genero_sel)
-]
+    # Filtro por Título (Adicionando um filtro de busca por texto)
+    busca_titulo = st.sidebar.text_input("Buscar por Título do Livro:", "").lower()
+
+    df = extract_data()
+
+    if df.empty:
+        st.warning("Nenhum dado encontrado. Verifique a API.")
+    else:
+        df_filtrado = df.copy()
+        if busca_titulo.strip():
+            busca_lower = busca_titulo.lower()
+            df_filtrado = df_filtrado[
+                df_filtrado['nome'].str.lower().str.contains(busca_lower) |
+                df_filtrado['autor'].str.lower().str.contains(busca_lower) |
+                df_filtrado['genero'].str.lower().str.contains(busca_lower)
+            ]
+
+    if df_filtrado.empty:
+        st.warning("Nenhum livro encontrado para a busca realizada.")
+    else:
+        filtros_padrao = not busca_titulo.strip()
+
+    df_filtrado = df.copy()
+
+    if genero_selecionado != 'Todos':
+        df_filtrado = df_filtrado[df_filtrado['genero'] == genero_selecionado]
+    
+    if autor_selecionado != 'Todos':
+        df_filtrado = df_filtrado[df_filtrado['autor'] == autor_selecionado]
+
+    if busca_titulo: # Aplica o filtro de título se a busca não estiver vazia
+        df_filtrado = df_filtrado[df_filtrado['nome'].str.lower().str.contains(busca_titulo)]
+
+    if df_filtrado.empty:
+        st.warning("Nenhum livro encontrado para os filtros selecionados.")
+    else:
+        # --- Cálculo das Contagens (com base nos dados filtrados) ---
+        contagem_autores = df_filtrado['autor'].value_counts().reset_index()
+        contagem_autores.columns = ['autor', 'quantidade_de_livros']
+        top_autores = contagem_autores.head(10)
+
+        contagem_generos = df_filtrado['genero'].value_counts().reset_index()
+        contagem_generos.columns = ['genero', 'quantidade_de_genero']
+        top_generos = contagem_generos.head(10)
+
+        # --- Layout das Colunas para Gráficos ---
+        col1, col_espaco, col2 = st.columns([8, 1, 8])
 
 # ========== TÍTULO ==========
 st.markdown(
-    "<h2 style='text-align: center;'>📈 📚 Análise dos Livros</h2>",
+    "<h2 style='text-align: center;'>📈 📚 Análise das suas leituras</h2>",
     unsafe_allow_html=True
 )
 
 st.markdown(
-    "<h4 style='text-align: center;'>Inclusão de Livros ao Longo do Tempo</h4>",
+    "<h4 style='text-align: center;'>Leituras novas ao longo do lempo</h4>",
     unsafe_allow_html=True
 )
 
@@ -66,7 +115,7 @@ st.divider()
 # ========== GRÁFICO: LIVROS POR GÊNERO ==========
 
 st.markdown(
-    "<h3 style='text-align: center;'>📘 Quantidade de Livros por Gênero</h3>",
+    "<h3 style='text-align: center;'>📘 Quantidade de Livros lidos por Gênero</h3>",
     unsafe_allow_html=True
 )
 
@@ -108,7 +157,7 @@ fig_autores = px.pie(
 )
 chart1, chart2 = st.columns((2))
 with chart1:
-    st.subheader('📚 Top 10 Autores Mais Cadastrados')
+    st.subheader('📚 Seus Top 10 autores mais lidos')
     fig = px.pie(top_autores, values = "autor", names = "quantidade", template = "plotly_dark")
     fig_autores.update_traces(text = top_autores["quantidade"], textposition = "inside")
     st.plotly_chart(fig_autores,use_container_width=True)
@@ -131,7 +180,7 @@ fig_generos = px.pie(
 )
 
 with chart2:
-    st.subheader('🏆 Top 10 Gêneros Mais Listados')
+    st.subheader('🏆 Seus Top 10 Gêneros mais lidos')
     fig = px.pie(top_generos, values = "genero", names = "quantidade", template = "gridon")
     fig_generos.update_traces(text=top_generos["quantidade"], textposition="inside")
     st.plotly_chart(fig_generos,use_container_width=True)
@@ -139,12 +188,12 @@ with chart2:
 
 # ========== GRÁFICO DE BARRAS: TOP 10 AUTORES MAIS CADASTRADOS ==========
 st.markdown(
-    "<h3 style='text-align: center;'>🏆 Top 10 Autores com Mais Livros Cadastrados</h3>",
+    "<h3 style='text-align: center;'>🏆 Top 10 autores mais queridos por você</h3>",
     unsafe_allow_html=True
 )
 
 st.markdown(
-    "<h4 style='text-align: center;'>Top 10 Autores com Mais Livros</h4>",
+    "<h4 style='text-align: center;'>Autores que mais te cativaram</h4>",
     unsafe_allow_html=True
 )
 
@@ -175,7 +224,7 @@ with col_centro:
 # ========== GRÁFICO: INCLUSÕES POR ANO ==========
 
 st.markdown(
-    "<h3 style='text-align: center;'>📈 Evolução de Inclusão de Livros</h3>",
+    "<h3 style='text-align: center;'>📈 Evolução da sua leitura</h3>",
     unsafe_allow_html=True
 )
 
