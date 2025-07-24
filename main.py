@@ -24,13 +24,16 @@ models.Base.metadata.create_all(bind=engine)
 
 
 # Endpoint raiz para dar boas-vindas e instruções básicas de uso
-@app.get("/", methods=["GET", "HEAD"])
+@app.get("/")
 def raiz():
     return {"mensagem": "API da Biblioteca está no ar! Seja bem-vindo(a)!, "
     "Você pode acessar os endpoints para gerenciar livros."
     "\n Basta colocar a plavra livros no final da URL, por exemplo: /livros"
     "\nMas se você quiser pesquisar por id, basta colocar o id do livro no final da URL, por exemplo: /livros/1"}
 
+@app.head("/", include_in_schema=False)
+def raiz_head():
+    return
 
 # Dependência abre e fecha uma sessão com o banco de dados
 def get_db():
