@@ -24,7 +24,7 @@ models.Base.metadata.create_all(bind=engine)
 
 
 # Endpoint raiz para dar boas-vindas e instruções básicas de uso
-@app.get("/")
+@app.get("/", methods=["GET", "HEAD"])
 def raiz():
     return {"mensagem": "API da Biblioteca está no ar! Seja bem-vindo(a)!, "
     "Você pode acessar os endpoints para gerenciar livros."
