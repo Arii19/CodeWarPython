@@ -1,0 +1,160 @@
+        body {
+            background-color: #121212;
+            color: #FFFFFF;
+        }
+
+        .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        h1, h2, h3, h4 {
+            text-align: center;
+            color: #D2E0E2;
+                .stDownloadButton>button {
+            background-color: #0E76A8;
+            color: white;
+            border-radius: 8px;
+            padding: 0.5em 1em;
+            font-weight: bold;
+        }
+
+        .stDownloadButton>button:hover {
+            background-color: #075E8D;
+            color: white;
+        }
+        }
+        .livro-card {
+            background-color: #232326;
+            padding: 1rem;
+            border-radius: 12px;
+            max-width: 700px;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            color: #CCCCCC;
+            margin-bottom: 1.5rem;
+        }
+
+        .livro-imagem {
+            width: 200px;
+            height: 280px;
+            border-radius: 12px;
+            flex-shrink: 0;
+            object-fit: cover;
+        }
+
+        .livro-info {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .linha-titulo-autor {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex-wrap: wrap;
+        }
+
+        .linha-titulo-autor h3 {
+            max-width: 70%;       /* título ocupa no máximo 70% da largura */
+            word-wrap: break-word; /* permite quebra dentro de palavras se necessário */
+            margin: 0;
+            color: #D2E0E2;
+            font-weight: 700;
+        }
+
+        .linha-titulo-autor p.autor {
+            margin: 0;
+            color: #A0C4FF;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .descricao {
+            margin-top: 0.5rem;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #CCCCCC;
+        }
+            
+        .button {
+            background-color: #0E76A8;
+            color: white;
+            border-radius: 8px;
+            padding: 0.5em 1em;
+            font-weight: bold;
+        }
+
+        .stButton > button {
+            background-color: #0E76A8 !important;
+            color: white !important;
+            border: 2px solid #0E76A8 !important;
+            border-radius: 8px !important;
+            font-weight: bold !important;
+            padding: 0.5em 1em !important;
+            transition: all 0.2s ease-in-out !important;
+            outline: none !important;
+            box-shadow: 0 0 6px #0e37a8 !important;
+        }
+
+        .stButton > button:hover {
+            background-color: #0e37a8 !important;
+            border: 2px solid #0e37a8 !important;
+            color: white !important;
+        }
+
+        .stButton > button:active {
+            background-color: #0e37a8 !important;
+            color: white !important;
+            border: 2px solid #0e37a8 !important;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        input[type=number] {
+            border: 1px solid #0E76A8 !important;
+            border-radius: 8px !important;
+            padding: 0.3em 0.6em !important;
+            box-shadow: none !important;
+            outline: none !important;
+            color: white;
+            background-color: #232326;
+        }
+
+        input[type=number]:hover {
+            border-color: #0E76A8 !important;
+            box-shadow: 0 0 5px #0E76A8 !important;
+            outline: none !important;
+        }
+
+        input[type=number]:focus {
+            border-color: #075E8D !important;
+            box-shadow: 0 0 5px #075E8D !important;
+            outline: none !important;
+        }
+
+        input[type=number]::-webkit-inner-spin-button {
+            background-color: #232326 !important;
+            border: none !important;
+            height: auto !important;
+            width: 18px !important;
+            color: white !important;
+        }
+
+        input[type=number]::-moz-inner-spin-button {
+            background-color: #232326 !important;
+            border: none !important;
+            height: auto !important;
+            width: 18px !important;
+            color: white !important;
+        }
+
+        input[type=number]::-webkit-inner-spin-button:hover {
+            background-color: #0E76A8 !important;
+        }
+
+        input[type=number]::-webkit-inner-spin-button:focus {
+            background-color: #075E8D !important;
+        }
