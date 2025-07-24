@@ -41,7 +41,7 @@ def formulario_adicionar() -> None:
     """
     Exibe formulário para adicionar um novo livro à base via API.
     """
-    st.markdown("## ➕ Adicionar Livro")
+    st.markdown("<h3 style='text-align: center;'>➕ Adicionar Livro</h3>", unsafe_allow_html=True)
     nome: str = st.text_input("Título para adicionar")
     autor: str = st.text_input("Autor para adicionar")
     descricao: str = st.text_area("Descrição para adicionar")

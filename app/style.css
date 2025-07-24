@@ -58,8 +58,8 @@
         }
 
         .linha-titulo-autor h3 {
-            max-width: 70%;       /* título ocupa no máximo 70% da largura */
-            word-wrap: break-word; /* permite quebra dentro de palavras se necessário */
+            max-width: 70%;       
+            word-wrap: break-word;
             margin: 0;
             color: #D2E0E2;
             font-weight: 700;
@@ -158,3 +158,29 @@
         input[type=number]::-webkit-inner-spin-button:focus {
             background-color: #075E8D !important;
         }
+
+/* Responsividade para telas menores */
+@media (max-width: 600px) {
+    .livro-card {
+        flex-direction: column;
+        max-width: 100%;
+        padding: 1rem;
+    }
+    .livro-imagem {
+        width: 100%;
+        height: auto;
+        margin-bottom: 1rem;
+    }
+    .linha-titulo-autor h3 {
+        max-width: 100%;
+        font-size: 1.2rem;
+    }
+    .linha-titulo-autor p.autor {
+        white-space: normal;
+        font-size: 1rem;
+    }
+    .descricao {
+        font-size: 0.9rem;
+        line-height: 1.3;
+    }
+}
