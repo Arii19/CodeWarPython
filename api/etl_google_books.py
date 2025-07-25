@@ -5,11 +5,12 @@ import requests
 from api.postgre import SessionLocal
 from api.models import Livro
 from urllib.parse import quote_plus
+from sqlalchemy import func
 
 def extract():
     # Extrai dados da API do Google Books para livros de um autor específico
     try:
-        url = ("https://www.googleapis.com/books/v1/volumes?q=inauthor:{autor}&maxResults=40")
+        url = ("https://www.googleapis.com/books/v1/volumes?q=bestseller&maxResults=40")
         response = requests.get(url)
         if response.status_code != 200:
          raise Exception(f"Erro ao acessar a API: {response.status_code}")
@@ -89,9 +90,9 @@ def transform(df):
 
         df = df.where(pd.notnull(df), None)
 
-        # Normalização e agrupamento de gêneros
-
-        # REMOÇÃO DE DUPLICADOS: manter apenas a primeira ocorrência de cada nome
+        df["nome"] = df["nome"].str.strip().str.title()
+        df["autor"] = df["autor"].str.strip().str.title()
+       
         df = df.drop_duplicates(subset=["nome"], keep="first").reset_index(drop=True)
 
         print("DataFrame transformado e com duplicados removidos:")
@@ -134,8 +135,45 @@ def load(df):
     finally:
         session.close()
 
+def remover_livros_duplicados():
+    session = SessionLocal()
+    try:
+        # Subconsulta para obter o menor ID (ou mais antigo) de cada livro único (nome + autor)
+        subquery = (
+            session.query(
+                func.min(Livro.id).label("id")
+            )
+            .group_by(Livro.nome, Livro.autor)
+            .subquery()
+        )
+
+        # Seleciona todos os livros que NÃO estão na lista de primeiros (ou seja, são duplicatas)
+        duplicatas = (
+            session.query(Livro)
+            .filter(Livro.id.not_in(session.query(subquery.c.id)))
+            .all()
+        )
+
+        print(f"Total de duplicatas encontradas: {len(duplicatas)}")
+
+        # Exclui os livros duplicados
+        for livro in duplicatas:
+            print(f"Removendo duplicado: {livro.nome} - {livro.autor}")
+            session.delete(livro)
+
+        session.commit()
+        print("Livros duplicados removidos com sucesso!")
+
+    except Exception as e:
+        session.rollback()
+        print(f"Erro ao remover duplicatas: {e}")
+
+    finally:
+        session.close()
+
 
 dados = extract()
 dados_tratados = transform(dados)
 load(dados_tratados)
 atualizar_capas()
+remover_livros_duplicados()
