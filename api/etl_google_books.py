@@ -104,23 +104,22 @@ def transform(df):
         print(f"Erro na transformação: {e}")
         raise
 
-
 def load(df):
+    session = SessionLocal()
     try:
-        session = SessionLocal()
         count_novos = 0
 
+        # Inserção de novos livros sem duplicar 
         for _, row in df.iterrows():
-            # Verifica se o livro já existe no banco (nome + autor)
             livro_existente = session.query(Livro).filter_by(nome=row["nome"], autor=row["autor"]).first()
-            
+
             if not livro_existente:
                 novo_livro = Livro(
                     nome=row["nome"],
                     autor=row["autor"],
-                    descricao=row["descricao"] or "",  # caso seja None, evitar erro
-                    genero=row["genero"] or "",  # caso seja None, evitar erro
-                    capa=row.get("thumbnail", "") or "",  # Caso venha capa no dataframe, se não, vazio
+                    descricao=row["descricao"] or "",
+                    genero=row["genero"] or "",
+                    capa=row.get("thumbnail", "") or "",
                     data_inclusao=datetime.now(timezone.utc)
                 )
                 session.add(novo_livro)
@@ -128,26 +127,14 @@ def load(df):
 
         session.commit()
         print(f"Carga concluída com sucesso! Livros inseridos: {count_novos}")
-    except Exception as e:
-        print(f"Erro na carga: {e}")
-        session.rollback()
-        raise
-    finally:
-        session.close()
 
-def remover_livros_duplicados():
-    session = SessionLocal()
-    try:
-        # Subconsulta para obter o menor ID (ou mais antigo) de cada livro único (nome + autor)
+        # Remoção de duplicatas antigas 
         subquery = (
-            session.query(
-                func.min(Livro.id).label("id")
-            )
+            session.query(func.min(Livro.id).label("id"))
             .group_by(Livro.nome, Livro.autor)
             .subquery()
         )
 
-        # Seleciona todos os livros que NÃO estão na lista de primeiros (ou seja, são duplicatas)
         duplicatas = (
             session.query(Livro)
             .filter(Livro.id.not_in(session.query(subquery.c.id)))
@@ -155,8 +142,6 @@ def remover_livros_duplicados():
         )
 
         print(f"Total de duplicatas encontradas: {len(duplicatas)}")
-
-        # Exclui os livros duplicados
         for livro in duplicatas:
             print(f"Removendo duplicado: {livro.nome} - {livro.autor}")
             session.delete(livro)
@@ -164,16 +149,49 @@ def remover_livros_duplicados():
         session.commit()
         print("Livros duplicados removidos com sucesso!")
 
+        # Atualização de capas dos livros que ainda estão sem 
+        livros_sem_capa = session.query(Livro).filter((Livro.capa == None) | (Livro.capa == "")).all()
+
+        for livro in livros_sem_capa:
+            titulo_encoded = quote_plus(livro.nome)
+            url = f"https://www.googleapis.com/books/v1/volumes?q={titulo_encoded}"
+
+            try:
+                response = requests.get(url)
+                if response.status_code == 200:
+                    dados = response.json()
+                    items = dados.get("items", [])
+
+                    if items:
+                        volume_info = items[0].get("volumeInfo", {})
+                        image_links = volume_info.get("imageLinks", {})
+                        capa_url = image_links.get("thumbnail") or image_links.get("smallThumbnail")
+
+                        if capa_url:
+                            capa_url = capa_url.replace("http://", "https://")
+                            livro.capa = capa_url
+                            print(f"Capa atualizada para '{livro.nome}': {capa_url}")
+                    else:
+                        print(f"Nenhuma capa encontrada para '{livro.nome}'.")
+                else:
+                    print(f"Erro ao buscar '{livro.nome}': status {response.status_code}")
+            except Exception as e:
+                print(f"Erro na requisição para '{livro.nome}': {e}")
+
+        session.commit()
+        print("Capas atualizadas com sucesso!")
+
     except Exception as e:
         session.rollback()
-        print(f"Erro ao remover duplicatas: {e}")
+        print(f"Erro geral durante carga ou atualização de capas: {e}")
+        raise
 
     finally:
         session.close()
+
 
 
 dados = extract()
 dados_tratados = transform(dados)
 load(dados_tratados)
 atualizar_capas()
-remover_livros_duplicados()
